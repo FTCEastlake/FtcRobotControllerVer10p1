@@ -23,6 +23,7 @@ public class MecanumDrive {
     DcMotor _backLeft = null;
     DcMotor _backRight = null;
 
+    double _strafeMagnitude = 1.1;
     IMU _imu;
 
     public MecanumDrive(LinearOpMode opMode, ERCParameterLogger logger){
@@ -82,7 +83,7 @@ public class MecanumDrive {
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
         double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 
-        rotX = rotX * 1.1;  // Counteract imperfect strafing
+        rotX = rotX * _strafeMagnitude;  // Counteract imperfect strafing
 
         // Denominator is the largest motor power (absolute value) or 1
         // This ensures all the powers maintain the same ratio,

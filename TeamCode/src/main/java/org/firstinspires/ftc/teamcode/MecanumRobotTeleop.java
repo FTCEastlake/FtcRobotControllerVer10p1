@@ -64,50 +64,7 @@ public class MecanumRobotTeleop extends LinearOpMode {
         }
     }
 
-    public void robotCenteredControl(){
-//        //change wheel speed proportionate to stick values
-//        frontLeft.setPower(lsx + lsy + rsx);
-//        frontRight.setPower(lsx + lsy - rsx);
-//        backLeft.setPower(lsx - lsy + rsx);
-//        backRight.setPower(lsx - lsy - rsx);
-    }
 
-    public void fieldCenteredControl() {
-//        //change wheel speed proportionate to stick values
-//
-//
-//        // roll vs pitch vs yaw
-//        // ---> https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Yaw_Axis_Corrected.svg/250px-Yaw_Axis_Corrected.svg.png
-//
-//
-//        //mecanum wheel directions mapping
-//        // ---> https://gm0.org/en/latest/_images/mecanum-drive-directions.png
-//
-//
-//        //update stick magnitude (for gyroCos and gyroSin)
-//        strafeMagnitude = Math.sqrt((lsx * lsx) + (lsy * lsy));
-//
-//
-//        //update gyro values
-//        gyroYaw = 0;
-//        gyroCos = Math.cos(gyroYaw)/(2 * Math.PI)*strafeMagnitude;
-//        gyroSin = Math.sin(gyroYaw)/(2 * Math.PI)*strafeMagnitude;
-//
-//
-//        //math to determine power for each motor
-//        // ---> subtract gyroX and gyroY from lsx and lsy respectively to get distance between the two
-//        //      ---> leave spin value (rsx) alone, is not affected by gyro
-//        FLPower = (lsx - gyroCos) + (lsy - gyroSin) + rsx;
-//        FRPower = (lsx - gyroCos) + (lsy - gyroSin) - rsx;
-//        BLPower = (lsx - gyroCos) - (lsy - gyroSin) + rsx;
-//        BRPower = (lsx - gyroCos) - (lsy - gyroSin) - rsx;
-//
-//
-//        frontLeft.setPower( FLPower );
-//        frontRight.setPower( FRPower );
-//        backLeft.setPower( BLPower );
-//        backRight.setPower( BRPower );
-    }
 
     public void updateLogAndTelemetry() {
         double currentTime = getRuntime();
