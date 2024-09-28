@@ -40,10 +40,13 @@ public class MecanumRobotTeleop extends LinearOpMode {
     //boolean for robot control type selection, true fo field centered, false for robot centered
     boolean fieldCenterControlSelect = true;
 
+    DcMotor _armMotor;
+
     @Override
     public void runOpMode() throws InterruptedException {
 
         initRobot();
+        _armMotor = hardwareMap.dcMotor.get("armMotor");
         //telemetry.setAutoClear(true);
 
         //******************************
@@ -57,7 +60,8 @@ public class MecanumRobotTeleop extends LinearOpMode {
             _lsy = gamepad1.left_stick_y;
             _rsx = gamepad1.right_stick_x;
             _startButton = gamepad1.start;
-            _mecanumDrive.drive(_lsx, _lsy, _rsx, _startButton);
+            _armMotor.setPower(_lsx);
+            //mecanumDrive.drive(_lsx, _lsy, _rsx, _startButton);
             updateLogAndTelemetry();
 
 
