@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import java.util.Arrays;
 import java.util.List;
 
-@TeleOp(name = "TutorialTelemetryParameters")
+//@TeleOp(name = "TutorialTelemetryParameters")
 //public class Tutorial extends OpMode {
 public class TutorialTelemetryParameters extends LinearOpMode {
 
@@ -52,26 +52,26 @@ public class TutorialTelemetryParameters extends LinearOpMode {
         _logger.init();
 
         // Add all of the parameters you want to see on the driver hub display.
-        _logger.addParameter(_param1, 1);
-        _logger.addParameter(_param2, 2);
-        _logger.addParameter(_param3, 3);
-        _logger.addParameter(_param4, 4);
-        _logger.addParameter(_param5, 5);
-        _logger.addParameter(_param6, 6);
-        _logger.addParameter(_param7, 7);
-        _logger.addParameter(_param8, 8);
-        _logger.addParameter(_param9, 9);
-        _logger.addParameter(_param10, 10);
-        _logger.addParameter(_param11, 11);
-        _logger.addParameter(_param12, 12);
-        _logger.addParameter(_param13, 13);
-        _logger.addParameter(_param14, 14);
-        _logger.addParameter(_param15, 15);
-        _logger.addParameter(_param16, 16);
-        _logger.addParameter(_param17, 17);
-        _logger.addParameter(_param18, 17);
-        _logger.addParameter(_param19, 19);
-        _logger.addParameter(_param20, 20);
+        _logger.addParameter(_param1);
+        _logger.addParameter(_param2);
+        _logger.addParameter(_param3);
+        _logger.addParameter(_param4);
+        _logger.addParameter(_param5);
+        _logger.addParameter(_param6);
+        _logger.addParameter(_param7);
+        _logger.addParameter(_param8);
+        _logger.addParameter(_param9);
+        _logger.addParameter(_param10);
+        _logger.addParameter(_param11);
+        _logger.addParameter(_param12);
+        _logger.addParameter(_param13);
+        _logger.addParameter(_param14);
+        _logger.addParameter(_param15);
+        _logger.addParameter(_param16);
+        _logger.addParameter(_param17);
+        _logger.addParameter(_param18);
+        _logger.addParameter(_param19);
+        _logger.addParameter(_param20);
     }
 
     // Code inside this method will run exactly once after you press the INIT button.

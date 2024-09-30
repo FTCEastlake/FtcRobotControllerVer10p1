@@ -20,7 +20,7 @@ public class ERCParameterLogger {
 
     Map<String, Telemetry.Item> _paramMap;
     Telemetry.Item _statusUpdate;
-    String _statusCaption= "ERCStatus";
+    String _statusCaption= "Status";
 
     // We need to use the telemetry belonging to LinearOpMode, otherwise it will throw an exception.
     public ERCParameterLogger(LinearOpMode opMode){
@@ -45,16 +45,9 @@ public class ERCParameterLogger {
 
     //*********************************************************************
     // Adding parameters to telemetry
-    // Parameter types: string, integer and double
     //*********************************************************************
-    public void addParameter(String paramString, String val) {
-        _paramMap.put(paramString, _telemetry.addData(paramString, val));
-    }
-    public void addParameter(String paramString, int val) {
-        _paramMap.put(paramString, _telemetry.addData(paramString, val));
-    }
-    public void addParameter(String paramString, double val) {
-        _paramMap.put(paramString, _telemetry.addData(paramString, val));
+    public void addParameter(String paramString) {
+        _paramMap.put(paramString, _telemetry.addData(paramString, 0));
     }
 
 

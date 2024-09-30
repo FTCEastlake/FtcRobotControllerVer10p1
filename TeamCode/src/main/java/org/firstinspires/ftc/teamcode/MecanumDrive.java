@@ -26,7 +26,9 @@ public class MecanumDrive {
     double _strafeMagnitude = 1.1;
     IMU _imu;
 
-    public MecanumDrive(LinearOpMode opMode, ERCParameterLogger logger){
+    public MecanumDrive(LinearOpMode opMode, ERCParameterLogger logger,
+                        RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection,
+                        RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection){
 
         _opMode = opMode;
         _hardwareMap = opMode.hardwareMap;
@@ -36,9 +38,7 @@ public class MecanumDrive {
         // First IMU is on the controller hub
         _imu = _hardwareMap.get(IMU.class, "imu");
         // Adjust the orientation parameters to match your robot
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(logoFacingDirection, usbFacingDirection));
         // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
         _imu.initialize(parameters);
 
@@ -52,19 +52,21 @@ public class MecanumDrive {
         // Reverse the right side motors. This may be wrong for your setup.
         // If your robot moves backwards when commanded to go forwards,
         // reverse the left side instead.
-        // See the note about this earlier on this page.
-        _frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        _backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (logoFacingDirection == RevHubOrientationOnRobot.LogoFacingDirection.DOWN) {
+            _frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+            _backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
+        else {
+            _frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+            _backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
+
     }
 
     // Field-Centric code
     // Code is based of https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html
     public void drive(double leftStickX, double leftStickY, double rightStickX, boolean resetYaw)
     {
-//        double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
-//        double x = gamepad1.left_stick_x;
-//        double rx = gamepad1.right_stick_x;
-
         double y = -leftStickY;  // Remember, Y stick value is reversed
         double x = leftStickX;
         double rx = rightStickX;
@@ -75,6 +77,8 @@ public class MecanumDrive {
         //if (gamepad1.options)
         if (resetYaw) {
             _imu.resetYaw();
+            _logger.updateStatus("IMU reset yaw");
+            _logger.updateAll();
         }
 
         double botHeading = _imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
@@ -98,5 +102,40 @@ public class MecanumDrive {
         _backLeft.setPower(backLeftPower);
         _frontRight.setPower(frontRightPower);
         _backRight.setPower(backRightPower);
+    }
+
+    /**
+     * Move robot according to desired axes motions
+     * <p>
+     * Positive X is forward
+     * <p>
+     * Positive Y is strafe left
+     * <p>
+     * Positive Yaw is counter-clockwise
+     */
+    public void autoDrive(double x, double y, double yaw) {
+        // Calculate wheel powers.
+        double leftFrontPower    =  x -y -yaw;
+        double rightFrontPower   =  x +y +yaw;
+        double leftBackPower     =  x +y -yaw;
+        double rightBackPower    =  x -y +yaw;
+
+        // Normalize wheel powers to be less than 1.0
+        double max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
+        max = Math.max(max, Math.abs(leftBackPower));
+        max = Math.max(max, Math.abs(rightBackPower));
+
+        if (max > 1.0) {
+            leftFrontPower /= max;
+            rightFrontPower /= max;
+            leftBackPower /= max;
+            rightBackPower /= max;
+        }
+
+        // Send powers to the wheels.
+        _frontLeft.setPower(leftFrontPower);
+        _frontRight.setPower(rightFrontPower);
+        _backLeft.setPower(leftBackPower);
+        _backRight.setPower(rightBackPower);
     }
 }

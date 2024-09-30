@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.util.Log;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -46,7 +47,7 @@ public class MecanumRobotTeleop extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         initRobot();
-        _armMotor = hardwareMap.dcMotor.get("armMotor");
+        //_armMotor = hardwareMap.dcMotor.get("armMotor");
         //telemetry.setAutoClear(true);
 
         //******************************
@@ -60,8 +61,8 @@ public class MecanumRobotTeleop extends LinearOpMode {
             _lsy = gamepad1.left_stick_y;
             _rsx = gamepad1.right_stick_x;
             _startButton = gamepad1.start;
-            _armMotor.setPower(_lsx);
-            //mecanumDrive.drive(_lsx, _lsy, _rsx, _startButton);
+            //_armMotor.setPower(_lsx);
+            _mecanumDrive.drive(_lsx, _lsy, _rsx, _startButton);
             updateLogAndTelemetry();
 
 
@@ -91,11 +92,13 @@ public class MecanumRobotTeleop extends LinearOpMode {
         _logger.init();
 
         // Add all of the parameters you want to see on the driver hub display.
-        _logger.addParameter(_paramLsx, 1);
-        _logger.addParameter(_paramLsr, 2);
-        _logger.addParameter(_paramRsx, 3);
+        _logger.addParameter(_paramLsx);
+        _logger.addParameter(_paramLsr);
+        _logger.addParameter(_paramRsx);
 
-        _mecanumDrive = new MecanumDrive(this, _logger);
+        _mecanumDrive = new MecanumDrive(this, _logger,
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
     }
 
 }

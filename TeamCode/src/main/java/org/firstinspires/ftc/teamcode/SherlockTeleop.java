@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.util.Log;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -9,11 +10,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@Autonomous(name = "MecanumRobotAuto")
-public class MecanumRobotAuto extends LinearOpMode {
+@TeleOp(name = "SherlockTeleop")
+public class SherlockTeleop extends LinearOpMode {
 
-    ERCParameterLogger _logger = new ERCParameterLogger(this);
-    //MecanumDrive _mecanumDrive = new MecanumDrive(this);
+    ERCParameterLogger _logger;
+    MecanumDrive _mecanumDrive;
 
     String _paramLsx = "Left Stick X";
     String _paramLsr = "Left Stick Y";
@@ -29,6 +30,7 @@ public class MecanumRobotAuto extends LinearOpMode {
     float _lsx = 0;      //lsx = left stick x
     float _lsy = 0;      //lsy = right stick y
     float _rsx = 0;     //rsx = right stick x
+    boolean _startButton = false;
     double _strafeMagnitude = 0; //find stick distance from 0
 
     //initialize gyro
@@ -39,11 +41,25 @@ public class MecanumRobotAuto extends LinearOpMode {
     //boolean for robot control type selection, true fo field centered, false for robot centered
     boolean fieldCenterControlSelect = true;
 
+    DcMotor _armMotor;
+
+    DcMotor _frontLeft = null;
+    DcMotor _frontRight = null;
+    DcMotor _backLeft = null;
+    DcMotor _backRight = null;
+
     @Override
     public void runOpMode() throws InterruptedException {
 
         initRobot();
-        telemetry.setAutoClear(true);
+        //_armMotor = hardwareMap.dcMotor.get("armMotor");
+        //telemetry.setAutoClear(true);
+        // Make sure your ID's match your configuration
+//        _frontLeft = hardwareMap.dcMotor.get("frontLeft");
+//        _frontRight = hardwareMap.dcMotor.get("frontRight");
+//        _backLeft = hardwareMap.dcMotor.get("backLeft");
+//        _backRight = hardwareMap.dcMotor.get("backRight");
+
 
         //******************************
         // Main loop
@@ -55,73 +71,21 @@ public class MecanumRobotAuto extends LinearOpMode {
             _lsx = gamepad1.left_stick_x;
             _lsy = gamepad1.left_stick_y;
             _rsx = gamepad1.right_stick_x;
+            _startButton = gamepad1.start;
+            //_armMotor.setPower(_lsx);
+            _mecanumDrive.drive(_lsx, _lsy, _rsx, _startButton);
             updateLogAndTelemetry();
 
-            //robot control type selection
-            if (gamepad1.dpad_up) {
-                while (gamepad1.dpad_up) {
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                    updateLogAndTelemetry();
-                }
-                if (fieldCenterControlSelect) {
-                    robotCenteredControl();
-                } else {
-                    fieldCenteredControl();
-                }
-            }
+//            _frontLeft.setPower(_lsx);
+//            _frontRight.setPower(_rsx);
+//            _backLeft.setPower(_lsx);
+//            _backRight.setPower(_rsx);
 
 
         }
     }
 
-    public void robotCenteredControl(){
-//        //change wheel speed proportionate to stick values
-//        frontLeft.setPower(lsx + lsy + rsx);
-//        frontRight.setPower(lsx + lsy - rsx);
-//        backLeft.setPower(lsx - lsy + rsx);
-//        backRight.setPower(lsx - lsy - rsx);
-    }
 
-    public void fieldCenteredControl() {
-//        //change wheel speed proportionate to stick values
-//
-//
-//        // roll vs pitch vs yaw
-//        // ---> https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Yaw_Axis_Corrected.svg/250px-Yaw_Axis_Corrected.svg.png
-//
-//
-//        //mecanum wheel directions mapping
-//        // ---> https://gm0.org/en/latest/_images/mecanum-drive-directions.png
-//
-//
-//        //update stick magnitude (for gyroCos and gyroSin)
-//        strafeMagnitude = Math.sqrt((lsx * lsx) + (lsy * lsy));
-//
-//
-//        //update gyro values
-//        gyroYaw = 0;
-//        gyroCos = Math.cos(gyroYaw)/(2 * Math.PI)*strafeMagnitude;
-//        gyroSin = Math.sin(gyroYaw)/(2 * Math.PI)*strafeMagnitude;
-//
-//
-//        //math to determine power for each motor
-//        // ---> subtract gyroX and gyroY from lsx and lsy respectively to get distance between the two
-//        //      ---> leave spin value (rsx) alone, is not affected by gyro
-//        FLPower = (lsx - gyroCos) + (lsy - gyroSin) + rsx;
-//        FRPower = (lsx - gyroCos) + (lsy - gyroSin) - rsx;
-//        BLPower = (lsx - gyroCos) - (lsy - gyroSin) + rsx;
-//        BRPower = (lsx - gyroCos) - (lsy - gyroSin) - rsx;
-//
-//
-//        frontLeft.setPower( FLPower );
-//        frontRight.setPower( FRPower );
-//        backLeft.setPower( BLPower );
-//        backRight.setPower( BRPower );
-    }
 
     public void updateLogAndTelemetry() {
         double currentTime = getRuntime();
@@ -136,7 +100,8 @@ public class MecanumRobotAuto extends LinearOpMode {
     }
 
     private void initRobot() {
-        //_mecanumDrive = new MecanumDrive(this);
+
+        _logger = new ERCParameterLogger(this);
 
         // Add all of the parameters you want displayed on the driver hub
         //_logger.addStatus();
@@ -146,6 +111,10 @@ public class MecanumRobotAuto extends LinearOpMode {
         _logger.addParameter(_paramLsx);
         _logger.addParameter(_paramLsr);
         _logger.addParameter(_paramRsx);
+
+        _mecanumDrive = new MecanumDrive(this, _logger,
+                RevHubOrientationOnRobot.LogoFacingDirection.DOWN,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
     }
 
 }

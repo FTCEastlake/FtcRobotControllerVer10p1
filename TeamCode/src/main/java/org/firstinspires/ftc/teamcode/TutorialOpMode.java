@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-@TeleOp(name = "TutorialOpMode")
+//@TeleOp(name = "TutorialOpMode")
 //public class Tutorial extends OpMode {
 public class TutorialOpMode extends OpMode {
 

@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name = "Frankenstein")
+//@TeleOp(name = "Frankenstein")
 public class Frankenstein extends LinearOpMode {
 
     ERCParameterLogger _logger = new ERCParameterLogger(this);
