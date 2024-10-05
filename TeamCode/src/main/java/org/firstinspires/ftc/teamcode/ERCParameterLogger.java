@@ -27,11 +27,10 @@ public class ERCParameterLogger {
         _opMode = opMode;
         _telemetry = _opMode.telemetry;
 
-        // Note: don't call initParameters() in this constructor.
-        // It might need time to fully instantiate before trying to interacting with it.
+        init();
     }
 
-    public void init()
+    private void init()
     {
         _paramMap = new HashMap<>();
         _telemetry.clear();             // Removes all items from the receiver whose value is not to be retained.

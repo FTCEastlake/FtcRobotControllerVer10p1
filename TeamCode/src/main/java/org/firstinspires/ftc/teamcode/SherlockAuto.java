@@ -20,17 +20,6 @@ public class SherlockAuto extends LinearOpMode {
     MecanumDrive _mecanumDrive;
     ERCVision _vision;
 
-    String _paramLsx = "Left Stick X";
-    String _paramLsr = "Left Stick Y";
-    String _paramRsx = "Right Stick X";
-
-
-    //shorten controller values for readability, values are "float" data type internally
-    float _lsx = 0;      //lsx = left stick x
-    float _lsy = 0;      //lsy = right stick y
-    float _rsx = 0;     //rsx = right stick x
-    boolean _startButton = false;
-    double _strafeMagnitude = 0; //find stick distance from 0
 
     // Adjust these numbers to suit your robot.
     final double DESIRED_DISTANCE = 12.0; //  this is how close the camera should get to the target (inches)
@@ -86,40 +75,16 @@ public class SherlockAuto extends LinearOpMode {
                 _mecanumDrive.autoDrive(drive, strafe, turn);
             }
             else {
-                //update stick values
-                _lsx = gamepad1.left_stick_x / 2.0f;
-                _lsy = gamepad1.left_stick_y / 2.0f;
-                _rsx = gamepad1.right_stick_x / 3.0f;
-                _startButton = gamepad1.start;
-                _mecanumDrive.drive(_lsx, _lsy, _rsx, _startButton);
-                updateLogAndTelemetry();
+                _mecanumDrive.manualDrive();
             }
         }
     }
 
 
 
-    public void updateLogAndTelemetry() {
-        double currentTime = getRuntime();
-//        String statusMsg = String.format("Current runtime = %.1f\n", currentTime);
-//        statusMsg += String.format("Current runtime = %.1f\n", currentTime);
-//        statusMsg += String.format("Current runtime = %.1f\n", currentTime);
-//        _logger.updateStatus(statusMsg);
-        _logger.updateParameter(_paramLsx, _lsx);
-        _logger.updateParameter(_paramLsr, _lsy);
-        _logger.updateParameter(_paramRsx, _rsx);
-        _logger.updateAll();
-    }
-
     private void initRobot() {
 
         _logger = new ERCParameterLogger(this);
-        _logger.init();
-
-        // Add all of the parameters you want to see on the driver hub display.
-        _logger.addParameter(_paramLsx);
-        _logger.addParameter(_paramLsr);
-        _logger.addParameter(_paramRsx);
 
         _mecanumDrive = new MecanumDrive(this, _logger,
                 RevHubOrientationOnRobot.LogoFacingDirection.DOWN,

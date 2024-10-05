@@ -6,16 +6,20 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
+import java.util.HashMap;
 
 public class MecanumDrive {
 
     LinearOpMode _opMode;
     HardwareMap _hardwareMap;
     ERCParameterLogger _logger;
+    Gamepad _gamepad1;
 
     // Declare motors
     DcMotor _frontLeft = null;
@@ -23,6 +27,16 @@ public class MecanumDrive {
     DcMotor _backLeft = null;
     DcMotor _backRight = null;
 
+    String _paramLsx = "Left Stick X";
+    String _paramLsr = "Left Stick Y";
+    String _paramRsx = "Right Stick X";
+
+    //shorten controller values for readability, values are "float" data type internally
+    double _lsx = 0;      //lsx = left stick x
+    double _lsy = 0;      //lsy = right stick y
+    double _rsx = 0;     //rsx = right stick x
+
+    double _powerFactor = 0.5;     // 1.0 = full power, 0.0 = no power
     double _strafeMagnitude = 1.1;
     IMU _imu;
 
@@ -32,7 +46,15 @@ public class MecanumDrive {
 
         _opMode = opMode;
         _hardwareMap = opMode.hardwareMap;
+        _gamepad1 = _opMode.gamepad1;
         _logger = logger;
+
+        init(logoFacingDirection, usbFacingDirection);
+    }
+
+    private void init(RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection,
+                      RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection)
+    {
 
         // Retrieves the (first) device with the indicated name which is also an instance of the indicated class or interface.
         // First IMU is on the controller hub
@@ -61,25 +83,41 @@ public class MecanumDrive {
             _backRight.setDirection(DcMotorSimple.Direction.REVERSE);
         }
 
+        // Add all of the parameters you want to see on the driver hub display.
+        _logger.addParameter(_paramLsx);
+        _logger.addParameter(_paramLsr);
+        _logger.addParameter(_paramRsx);
+
+        resetYaw();
+    }
+
+    public void resetYaw()
+    {
+        // This button choice was made so that it is hard to hit on accident,
+        // it can be freely changed based on preference.
+        // The equivalent button is start on Xbox-style controllers.
+        _imu.resetYaw();
+        _logger.updateStatus("IMU reset yaw");
+        _logger.updateAll();
     }
 
     // Field-Centric code
     // Code is based of https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html
-    public void drive(double leftStickX, double leftStickY, double rightStickX, boolean resetYaw)
+    public void manualDrive()
     {
-        double y = -leftStickY;  // Remember, Y stick value is reversed
-        double x = leftStickX;
-        double rx = rightStickX;
+        _lsx = _gamepad1.left_stick_x;
+        _lsy = _gamepad1.left_stick_y;
+        _rsx = _gamepad1.right_stick_x;
 
-        // This button choice was made so that it is hard to hit on accident,
-        // it can be freely changed based on preference.
-        // The equivalent button is start on Xbox-style controllers.
-        //if (gamepad1.options)
-        if (resetYaw) {
-            _imu.resetYaw();
-            _logger.updateStatus("IMU reset yaw");
-            _logger.updateAll();
-        }
+        _logger.updateParameter(_paramLsx, _lsx);
+        _logger.updateParameter(_paramLsr, _lsy);
+        _logger.updateParameter(_paramRsx,_rsx);
+        _logger.updateAll();
+
+
+        double y = -_lsy;  // Remember, Y stick value is reversed
+        double x = _lsx;
+        double rx = _rsx;
 
         double botHeading = _imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
@@ -98,10 +136,10 @@ public class MecanumDrive {
         double frontRightPower = (rotY - rotX - rx) / denominator;
         double backRightPower = (rotY + rotX - rx) / denominator;
 
-        _frontLeft.setPower(frontLeftPower);
-        _backLeft.setPower(backLeftPower);
-        _frontRight.setPower(frontRightPower);
-        _backRight.setPower(backRightPower);
+        _frontLeft.setPower(frontLeftPower * _powerFactor);
+        _backLeft.setPower(backLeftPower * _powerFactor);
+        _frontRight.setPower(frontRightPower * _powerFactor);
+        _backRight.setPower(backRightPower * _powerFactor);
     }
 
     /**

@@ -12,6 +12,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -38,6 +39,11 @@ public class ERCVision {
         _hardwareMap = opMode.hardwareMap;
         _logger = logger;
 
+        init();
+    }
+
+    private void init()
+    {
         // Create the AprilTag processor by using a builder.
         _aprilTag = new AprilTagProcessor.Builder().build();
 
@@ -56,6 +62,7 @@ public class ERCVision {
                 .addProcessor(_aprilTag)
                 .build();
 
+        // Add all of the parameters you want to see on the driver hub display.
         _logger.addParameter(_paramId);
         _logger.addParameter(_paramRange);
         _logger.addParameter(_paramBearing);
