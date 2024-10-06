@@ -35,6 +35,8 @@ public class SherlockAuto extends LinearOpMode {
     final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
     final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
 
+    int _tagID = -1;
+
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -44,11 +46,24 @@ public class SherlockAuto extends LinearOpMode {
         double  turn            = 0;        // Desired turning power/speed (-1 to +1)
 
         initRobot();
-        _vision.setManualExposure(6, 250);
+
 
         // Wait for driver to press start
         _logger.updateStatus("Use 3 dots on upper right corner for camera stream preview on/off");
         _logger.updateAll();
+
+        int exposureMs = 6;
+        int gain = 250;
+        while (!isStarted())
+        {
+            boolean needAdjustment = false;
+            if (gamepad1.x) { exposureMs += 1; needAdjustment = true; }
+            else if (gamepad1.a) { exposureMs -= 1; needAdjustment = true; }
+            else if (gamepad1.y) { gain += 1; needAdjustment = true; }
+            else if (gamepad1.b) { gain -= 1; needAdjustment = true; }
+            if (needAdjustment)
+                _vision.setManualExposure(exposureMs, gain);
+        }
 
         //******************************
         // Main loop
@@ -56,7 +71,7 @@ public class SherlockAuto extends LinearOpMode {
         waitForStart();
         while (!isStopRequested())
         {
-            AprilTagDetection foundTag = _vision.detectAprilTag(11);
+            AprilTagDetection foundTag = _vision.detectAprilTag(_tagID);
             if (foundTag != null && gamepad1.left_bumper)
             {
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.

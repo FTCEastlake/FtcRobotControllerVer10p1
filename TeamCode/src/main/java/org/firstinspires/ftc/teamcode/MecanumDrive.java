@@ -36,7 +36,7 @@ public class MecanumDrive {
     double _lsy = 0;      //lsy = right stick y
     double _rsx = 0;     //rsx = right stick x
 
-    double _powerFactor = 0.5;     // 1.0 = full power, 0.0 = no power
+    double _powerFactor = 1.0;     // 1.0 = full power, 0.0 = no power
     double _strafeMagnitude = 1.1;
     IMU _imu;
 
