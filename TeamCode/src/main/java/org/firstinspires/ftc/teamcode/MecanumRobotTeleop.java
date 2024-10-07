@@ -48,7 +48,8 @@ public class MecanumRobotTeleop extends LinearOpMode {
 
         _mecanumDrive = new MecanumDrive(this, _logger,
                 RevHubOrientationOnRobot.LogoFacingDirection.DOWN,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD,
+                null);
     }
 
 }

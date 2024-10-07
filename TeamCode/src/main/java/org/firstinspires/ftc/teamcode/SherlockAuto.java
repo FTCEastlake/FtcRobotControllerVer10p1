@@ -80,7 +80,7 @@ public class SherlockAuto extends LinearOpMode {
                 double  yawError        = foundTag.ftcPose.yaw;
 
                 // Use the speed and turn "gains" to calculate how we want the robot to move.
-                drive  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                drive  = 0;//Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
                 turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
                 strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
@@ -90,6 +90,23 @@ public class SherlockAuto extends LinearOpMode {
                 _mecanumDrive.autoDrive(drive, strafe, turn);
             }
             else {
+                if (foundTag != null)
+                {
+                    // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+                    double  rangeError      = (foundTag.ftcPose.range - DESIRED_DISTANCE);
+                    double  headingError    = foundTag.ftcPose.bearing;
+                    double  yawError        = foundTag.ftcPose.yaw;
+
+                    // Use the speed and turn "gains" to calculate how we want the robot to move.
+                    drive  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                    turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+                    strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+
+                    String msg = String.format("Auto drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+                    _logger.updateStatus(msg);
+                    _logger.updateAll();
+                    //_mecanumDrive.autoDrive(drive, strafe, turn);
+                }
                 _mecanumDrive.manualDrive();
             }
         }
@@ -100,12 +117,11 @@ public class SherlockAuto extends LinearOpMode {
     private void initRobot() {
 
         _logger = new ERCParameterLogger(this);
-
+        _vision = new ERCVision(this, _logger);
         _mecanumDrive = new MecanumDrive(this, _logger,
                 RevHubOrientationOnRobot.LogoFacingDirection.DOWN,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
-
-        _vision = new ERCVision(this, _logger);
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD,
+                _vision);
     }
 
 }
