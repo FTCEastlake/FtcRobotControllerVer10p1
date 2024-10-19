@@ -62,9 +62,8 @@ public class ERCParameterLogger {
     public void updateParameter(String paramString, double val) {
         Objects.requireNonNull(_paramMap.get(paramString)).setValue(val);
     }
-    public void updateParameter(String paramString, String val, Boolean updateNow) {
+    public void updateParameter(String paramString, String val) {
         Objects.requireNonNull(_paramMap.get(paramString)).setValue(val);
-        if (updateNow) _telemetry.update();
     }
     public void updateAll() {
         _telemetry.update();

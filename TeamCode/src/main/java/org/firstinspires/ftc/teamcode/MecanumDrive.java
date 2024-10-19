@@ -20,6 +20,8 @@ import java.util.HashMap;
 
 public class MecanumDrive {
 
+    // Note: Logitech 310 button mappings can be referenced here
+    // https://gm0.org/en/latest/docs/software/tutorials/gamepad.html
     LinearOpMode _opMode;
     HardwareMap _hardwareMap;
     ERCParameterLogger _logger;
@@ -75,7 +77,7 @@ public class MecanumDrive {
     {
 
         // Retrieves the (first) device with the indicated name which is also an instance of the indicated class or interface.
-        // First IMU is on the controller hub
+        // First IMU is on the controller hub (version BHI260AP)
         _imu = _hardwareMap.get(IMU.class, "imu");
         // Adjust the orientation parameters to match your robot
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(logoFacingDirection, usbFacingDirection));

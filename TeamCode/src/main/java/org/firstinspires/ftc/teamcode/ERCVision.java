@@ -11,6 +11,8 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainCon
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.firstinspires.ftc.vision.opencv.ImageRegion;
+import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +26,7 @@ public class ERCVision {
 
     private VisionPortal _visionPortal = null;               // Used to manage the video source.
     private AprilTagProcessor _aprilTag = null;              // Used for managing the AprilTag detection process.
+    private PredominantColorProcessor _colorSensor = null;
 
     private static final int DESIRED_TAG_ID = -1;     // Choose the tag you want to approach or set to -1 for ANY tag.
 
@@ -32,6 +35,9 @@ public class ERCVision {
     String _paramBearing    = "AprilTag Bearing";
     String _paramYaw        = "AprilTag Yaw";
     String _paramDetections = "AprilTag Detections";
+    String _paramColor      = "Detected Color";
+
+    Boolean _isCameraReady = false;
 
     public ERCVision(LinearOpMode opMode, ERCParameterLogger logger) {
 
@@ -44,6 +50,17 @@ public class ERCVision {
 
     private void init()
     {
+        _colorSensor = new PredominantColorProcessor.Builder()
+                //.setRoi(ImageRegion.asUnityCenterCoordinates(-0.1, 0.1, 0.1, -0.1))
+                .setRoi(ImageRegion.asUnityCenterCoordinates(-0.5, 0.5, 0.5, -0.5))
+                .setSwatches(
+                        PredominantColorProcessor.Swatch.RED,
+                        PredominantColorProcessor.Swatch.BLUE,
+                        PredominantColorProcessor.Swatch.YELLOW,
+                        PredominantColorProcessor.Swatch.BLACK,
+                        PredominantColorProcessor.Swatch.WHITE)
+                .build();
+
         // Create the AprilTag processor by using a builder.
         _aprilTag = new AprilTagProcessor.Builder().build();
 
@@ -60,6 +77,7 @@ public class ERCVision {
         _visionPortal = new VisionPortal.Builder()
                 .setCamera(_hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .addProcessor(_aprilTag)
+                .addProcessor(_colorSensor)
                 .build();
 
         // Add all of the parameters you want to see on the driver hub display.
@@ -68,6 +86,32 @@ public class ERCVision {
         _logger.addParameter(_paramBearing);
         _logger.addParameter(_paramYaw);
         _logger.addParameter(_paramDetections);
+        _logger.addParameter(_paramColor);
+    }
+
+    public boolean ColorDetection(boolean detectRed, boolean detectBlue, boolean detectYellow)
+    {
+        boolean colorIsMatched = false;
+
+        // Request the most recent color analysis.
+        // This will return the closest matching colorSwatch and the predominant RGB color.
+        // Note: to take actions based on the detected color, simply use the colorSwatch in a comparison or switch.
+        //  eg:
+        //      if (result.closestSwatch == PredominantColorProcessor.Swatch.RED) {... some code  ...}
+        PredominantColorProcessor.Result result = _colorSensor.getAnalysis();
+        boolean redMatch = detectRed && (result.closestSwatch == PredominantColorProcessor.Swatch.RED);
+        boolean blueMatch = detectBlue && (result.closestSwatch == PredominantColorProcessor.Swatch.BLUE);
+        boolean yellowMatch = detectYellow && (result.closestSwatch == PredominantColorProcessor.Swatch.YELLOW);
+        String msg = (redMatch ? "RED " : "") + (blueMatch ? "BLUE " : "") + (yellowMatch ? "YELLOW " : "");
+        _logger.updateParameter(_paramColor, msg);
+        _logger.updateAll();
+
+        return redMatch || blueMatch || yellowMatch;
+    }
+
+    public void ColorDetectionEnable(boolean enable)
+    {
+        _visionPortal.setProcessorEnabled(_colorSensor, enable);
     }
 
     public AprilTagDetection detectAprilTag(int tagIndex)
@@ -115,6 +159,13 @@ public class ERCVision {
         return _desiredTag;
     }
 
+    public int getCameraExposureMs() {
+        return (int)_visionPortal.getCameraControl(ExposureControl.class).getExposure(TimeUnit.MILLISECONDS);
+    }
+
+    public int getCameraGain() {
+        return _visionPortal.getCameraControl(GainControl.class).getGain();
+    }
 
     public void setManualExposure(int exposureMS, int gain) {
 
@@ -137,15 +188,13 @@ public class ERCVision {
         // Set camera controls unless we are stopping.
         if (!_opMode.isStopRequested())
         {
-            ExposureControl exposureControl = _visionPortal.getCameraControl(ExposureControl.class);
-            if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
-                exposureControl.setMode(ExposureControl.Mode.Manual);
+            if (_visionPortal.getCameraControl(ExposureControl.class).getMode() != ExposureControl.Mode.Manual) {
+                _visionPortal.getCameraControl(ExposureControl.class).setMode(ExposureControl.Mode.Manual);
                 _opMode.sleep(50);
             }
-            exposureControl.setExposure((long)exposureMS, TimeUnit.MILLISECONDS);
+            _visionPortal.getCameraControl(ExposureControl.class).setExposure((long)exposureMS, TimeUnit.MILLISECONDS);
             _opMode.sleep(20);
-            GainControl gainControl = _visionPortal.getCameraControl(GainControl.class);
-            gainControl.setGain(gain);
+            _visionPortal.getCameraControl(GainControl.class).setGain(gain);
             _opMode.sleep(20);
             _logger.updateStatus("Camera settings: exposure = " + exposureMS + "ms, gain = " + gain);
             _logger.updateAll();
