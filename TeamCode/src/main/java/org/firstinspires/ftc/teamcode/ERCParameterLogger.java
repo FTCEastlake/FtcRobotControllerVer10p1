@@ -56,6 +56,9 @@ public class ERCParameterLogger {
     public void updateStatus(String val) {
         _statusUpdate.setValue(val);
     }
+    public void updateParameter(String paramString, boolean val) {
+        Objects.requireNonNull(_paramMap.get(paramString)).setValue(val ? "True" : "False");
+    }
     public void updateParameter(String paramString, int val) {
         Objects.requireNonNull(_paramMap.get(paramString)).setValue(val);
     }

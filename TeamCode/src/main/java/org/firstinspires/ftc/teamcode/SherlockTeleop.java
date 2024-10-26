@@ -15,11 +15,19 @@ public class SherlockTeleop extends LinearOpMode {
 
     ERCParameterLogger _logger;
     MecanumDrive _mecanumDrive;
+    ERCColorSensor _color;
+    ERCTouchSensor _touch;
 
     @Override
     public void runOpMode() throws InterruptedException {
 
         initRobot();
+
+        while (!isStarted())
+        {
+            _color.getColor();
+            _touch.isPressed();
+        }
 
         //******************************
         // Main loop
@@ -35,6 +43,7 @@ public class SherlockTeleop extends LinearOpMode {
 
             _mecanumDrive.manualDrive();
             updateLogAndTelemetry();
+            _color.getColor();
         }
     }
 
@@ -51,7 +60,8 @@ public class SherlockTeleop extends LinearOpMode {
     private void initRobot() {
 
         _logger = new ERCParameterLogger(this);
-
+        _color = new ERCColorSensor(this, _logger);
+        _touch = new ERCTouchSensor(this, _logger);
         _mecanumDrive = new MecanumDrive(this, _logger,
                 RevHubOrientationOnRobot.LogoFacingDirection.DOWN,
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD,
