@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -14,6 +15,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @TeleOp(name = "SherlockTrueAuto")
+@Disabled
 public class SherlockTrueAuto extends LinearOpMode {
 
     ERCParameterLogger _logger;

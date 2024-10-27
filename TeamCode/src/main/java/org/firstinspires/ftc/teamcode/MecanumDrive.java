@@ -20,43 +20,47 @@ import java.util.HashMap;
 
 public class MecanumDrive {
 
+    public enum RobotType {
+        Standard,
+        HolyCrab
+    }
     // Note: Logitech 310 button mappings can be referenced here
     // https://gm0.org/en/latest/docs/software/tutorials/gamepad.html
-    LinearOpMode _opMode;
-    HardwareMap _hardwareMap;
-    ERCParameterLogger _logger;
-    Gamepad _gamepad1;
-    IMU _imu = null;
-    ERCVision _vision = null;
+    private LinearOpMode _opMode;
+    private HardwareMap _hardwareMap;
+    private ERCParameterLogger _logger;
+    private Gamepad _gamepad1;
+    private IMU _imu = null;
+    private ERCVision _vision = null;
 
     // Declare motors
-    DcMotor _frontLeft = null;
-    DcMotor _frontRight = null;
-    DcMotor _backLeft = null;
-    DcMotor _backRight = null;
+    private DcMotor _frontLeft = null;
+    private DcMotor _frontRight = null;
+    private DcMotor _backLeft = null;
+    private DcMotor _backRight = null;
 
-    String _paramLsx = "Left Stick X";
-    String _paramLsr = "Left Stick Y";
-    String _paramRsx = "Right Stick X";
+    private String _paramLsx = "Left Stick X";
+    private String _paramLsr = "Left Stick Y";
+    private String _paramRsx = "Right Stick X";
 
     //shorten controller values for readability, values are "float" data type internally
-    double _lsx = 0;      //lsx = left stick x
-    double _lsy = 0;      //lsy = right stick y
-    double _rsx = 0;     //rsx = right stick x
+    private double _lsx = 0;      //lsx = left stick x
+    private double _lsy = 0;      //lsy = right stick y
+    private double _rsx = 0;     //rsx = right stick x
 
-    double _powerFactor = 1.0;     // 1.0 = full power, 0.0 = no power
-    double _strafeMagnitude = 1.1;
+    private double _powerFactor = 1.0;     // 1.0 = full power, 0.0 = no power
+    private double _strafeMagnitude = 1.1;
 
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
-    final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
-    final double STRAFE_GAIN =  0.015 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
-    final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+    private final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    private final double STRAFE_GAIN =  0.015 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
+    private final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
-    final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
-    final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
-    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
+    private final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
+    private final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
+    private final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
 
     public MecanumDrive(LinearOpMode opMode, ERCParameterLogger logger,
                         RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection,
@@ -111,6 +115,22 @@ public class MecanumDrive {
         resetYaw();
     }
 
+    public void setRobotType(RobotType roboType)
+    {
+        switch (roboType) {
+            case HolyCrab:
+                // Both front wheels have motors that are perpendicular to the wheels.
+                // Reverse the current directions of the back wheels to align properly.
+                _backLeft.setDirection(_backLeft.getDirection().inverted());
+                _backRight.setDirection(_backRight.getDirection().inverted());
+                break;
+            default:
+                break;  // nothing to alter
+
+        }
+
+    }
+
     public void resetYaw()
     {
         // This button choice was made so that it is hard to hit on accident,
@@ -156,6 +176,7 @@ public class MecanumDrive {
         double frontRightPower = (rotY - rotX - rx) / denominator;
         double backRightPower = (rotY + rotX - rx) / denominator;
 
+        // Apply final power
         _frontLeft.setPower(frontLeftPower * _powerFactor);
         _backLeft.setPower(backLeftPower * _powerFactor);
         _frontRight.setPower(frontRightPower * _powerFactor);
