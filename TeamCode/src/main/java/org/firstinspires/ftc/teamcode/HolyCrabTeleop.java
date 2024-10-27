@@ -21,6 +21,7 @@ public class HolyCrabTeleop extends LinearOpMode {
     //    Motor port1: "frontRight" (GoBILDA 5202/3/4 series)
     //    Motor port2: "backLeft"   (GoBILDA 5202/3/4 series)
     //    Motor port3: "backRight"  (GoBILDA 5202/3/4 series)
+    //    Servo port0: "blinkin led"
     //    I2C port0: "imu"          (REV internal IMU (BHI260AP))
     // Expansion Hub:
     //    Motor port0: "armLeft"    (GoBILDA 5202/3/4 series)
@@ -30,6 +31,7 @@ public class HolyCrabTeleop extends LinearOpMode {
     ERCParameterLogger _logger;
     MecanumDrive _mecanumDrive;
     ERCArm _arm;
+    ERCLed _led;
     ERCColorSensor _color;
     ERCTouchSensor _touch;
 
@@ -44,6 +46,7 @@ public class HolyCrabTeleop extends LinearOpMode {
         while (!isStarted())
         {
             _arm.setArm();
+            _led.setLedColor();
         }
 
         //******************************
@@ -83,6 +86,7 @@ public class HolyCrabTeleop extends LinearOpMode {
                 null);
         _mecanumDrive.setRobotType(MecanumDrive.RobotType.HolyCrab);
         _arm = new ERCArm(this, _logger);
+        _led = new ERCLed(this, _logger);
     }
 
 }
