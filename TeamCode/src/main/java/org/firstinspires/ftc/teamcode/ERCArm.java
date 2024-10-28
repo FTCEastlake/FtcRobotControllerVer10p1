@@ -23,8 +23,9 @@ public class ERCArm {
     private String _paramRightEncoder = "Arm Right Encoder";
     private String _paramArmLsy = "Arm lsy";
 
-    private int _minEncoderVal = 0;
-    private int _maxEncoderVal = 11500;
+    // Give a buffer of 200 to lessen gear grinding.
+    private int _minEncoderVal = 200;
+    private int _maxEncoderVal = 11300; // max looks like it's 11500
     private int _currentEncoderVal;
 
     private DcMotor.RunMode _runMode;

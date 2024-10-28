@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+
 @TeleOp(name = "HolyCrabTeleop")
 public class HolyCrabTeleop extends LinearOpMode {
 
@@ -23,10 +24,11 @@ public class HolyCrabTeleop extends LinearOpMode {
     //    Motor port3: "backRight"  (GoBILDA 5202/3/4 series)
     //    Servo port0: "blinkin led"
     //    I2C port0: "imu"          (REV internal IMU (BHI260AP))
+    //    I2C port3: "navx"         (navX2-Micro: 6-axis LSM6DSM IMU and LIS2MDL Magnetometer)
     // Expansion Hub:
     //    Motor port0: "armLeft"    (GoBILDA 5202/3/4 series)
     //    Motor port1: "armRight"   (GoBILDA 5202/3/4 series)
-    //    I2C port0: "imu2"         (REV internal IMU (BNO055))
+    //    I2C port0: "imu2"         (navX2-Micro)
 
     ERCParameterLogger _logger;
     MecanumDrive _mecanumDrive;
@@ -34,7 +36,7 @@ public class HolyCrabTeleop extends LinearOpMode {
     ERCLed _led;
     ERCColorSensor _color;
     ERCTouchSensor _touch;
-
+    //ERCNavX _navX;
 
 
 
@@ -47,6 +49,7 @@ public class HolyCrabTeleop extends LinearOpMode {
         {
             _arm.setArm();
             _led.setLedColor();
+            //_navX.getStatus();
         }
 
         //******************************
@@ -75,7 +78,7 @@ public class HolyCrabTeleop extends LinearOpMode {
         _logger.updateStatus(statusMsg);
     }
 
-    private void initRobot() {
+    private void initRobot() throws InterruptedException {
 
         _logger = new ERCParameterLogger(this);
 //        _color = new ERCColorSensor(this, _logger);
@@ -87,6 +90,7 @@ public class HolyCrabTeleop extends LinearOpMode {
         _mecanumDrive.setRobotType(MecanumDrive.RobotType.HolyCrab);
         _arm = new ERCArm(this, _logger);
         _led = new ERCLed(this, _logger);
+        //_navX = new ERCNavX(this, _logger);
     }
 
 }
