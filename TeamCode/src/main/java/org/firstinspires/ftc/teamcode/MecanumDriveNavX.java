@@ -37,15 +37,15 @@ public class MecanumDriveNavX extends LinearOpMode {
         // Main loop
         while (opModeIsActive()) {
             // Get gamepad inputs
-            double drive = -gamepad1.left_stick_y;
-            double strafe = gamepad1.left_stick_x;
-            double rotate = gamepad1.right_stick_x;
+            double _y = -gamepad1.left_stick_y;
+            double _x = gamepad1.left_stick_x;
+            double _rx = gamepad1.right_stick_x;
 
             // Get current robot heading
             float currentHeading = getCurrentHeading();
 
             // Calculate motor powers using field-centric drive
-            double[] powers = calculateMecanumPowers(drive, strafe, rotate, currentHeading);
+            double[] powers = calculateMecanumPowers(_y, _x, _rx, currentHeading);
 
             // Apply powers to motors
             setMotorPowers(powers);
@@ -64,10 +64,22 @@ public class MecanumDriveNavX extends LinearOpMode {
             backRight = hardwareMap.get(DcMotor.class, "backRight");
 
             // Set motor directions
-            frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-            backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-            frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
-            backRight.setDirection(DcMotorSimple.Direction.FORWARD);
+            boolean isHolyCrab = true;
+            if (isHolyCrab)
+            {
+                frontLeft.setDirection(DcMotorSimple.Direction.FORWARD);
+                backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+                frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+                backRight.setDirection(DcMotorSimple.Direction.FORWARD);
+            }
+            else
+            {
+                frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+                backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+                frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
+                backRight.setDirection(DcMotorSimple.Direction.FORWARD);
+            }
+
 
             // Set zero power behavior
             frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -109,20 +121,20 @@ public class MecanumDriveNavX extends LinearOpMode {
         }
     }
 
-    private double[] calculateMecanumPowers(double drive, double strafe, double rotate, float heading) {
+    private double[] calculateMecanumPowers(double _y, double _x, double _rx, float heading) {
         // Convert heading to radians
-        double headingRad = Math.toRadians(heading);
+        double headingRad = -Math.toRadians(heading);
 
         // Field-centric calculations
-        double rotatedX = strafe * Math.cos(headingRad) - drive * Math.sin(headingRad);
-        double rotatedY = strafe * Math.sin(headingRad) + drive * Math.cos(headingRad);
+        double rotX = _x * Math.cos(headingRad) - _y * Math.sin(headingRad);
+        double rotY = _x * Math.sin(headingRad) + _y * Math.cos(headingRad);
 
         // Calculate motor powers
         double[] powers = new double[4];
-        powers[0] = rotatedY + rotatedX + rotate; // Front Left
-        powers[1] = rotatedY - rotatedX - rotate; // Front Right
-        powers[2] = rotatedY - rotatedX + rotate; // Back Left
-        powers[3] = rotatedY + rotatedX - rotate; // Back Right
+        powers[0] = rotY + rotX + _rx; // Front Left
+        powers[1] = rotY - rotX - _rx; // Front Right
+        powers[2] = rotY - rotX + _rx; // Back Left
+        powers[3] = rotY + rotX - _rx; // Back Right
 
         // Normalize powers
         double max = Math.max(Math.max(Math.abs(powers[0]), Math.abs(powers[1])),
