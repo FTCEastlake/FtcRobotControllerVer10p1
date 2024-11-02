@@ -1,18 +1,15 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Log;
-
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 
-@TeleOp(name = "HolyCrabTeleop")
-public class HolyCrabTeleop extends LinearOpMode {
+@TeleOp(name = "HolyCrabTeleopNew")
+@Disabled
+public class HolyCrabTeleopNew extends LinearOpMode {
 
     //**************************************************************
     // HolyCrab hardware configuration:
@@ -31,12 +28,12 @@ public class HolyCrabTeleop extends LinearOpMode {
     //    I2C port0: "imu2"         (navX2-Micro)
 
     ERCParameterLogger _logger;
-    MecanumDrive _mecanumDrive;
+    ERCMecanumDrive _mecanumDrive;
     ERCArm _arm;
     ERCLed _led;
     ERCColorSensor _color;
     ERCTouchSensor _touch;
-    //ERCNavX _navX;
+    //ERCNavxIMU _navX;
 
 
 
@@ -84,14 +81,14 @@ public class HolyCrabTeleop extends LinearOpMode {
         _logger = new ERCParameterLogger(this);
 //        _color = new ERCColorSensor(this, _logger);
 //        _touch = new ERCTouchSensor(this, _logger);
-        _mecanumDrive = new MecanumDrive(this, _logger,
+        _mecanumDrive = new ERCMecanumDrive(this, _logger,
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD,
                 null);
-        _mecanumDrive.setRobotType(MecanumDrive.RobotType.HolyCrab);
+        _mecanumDrive.setRobotType(ERCMecanumDrive.RobotType.HolyCrab);
         _arm = new ERCArm(this, _logger);
         //_led = new ERCLed(this, _logger);
-        //_navX = new ERCNavX(this, _logger);
+        //_navX = new ERCNavxIMU(this, _logger);
     }
 
 }

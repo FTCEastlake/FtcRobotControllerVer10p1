@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -13,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-public class ERCNavX {
+public class ERCNavxIMU {
 
     private LinearOpMode _opMode;
     private HardwareMap _hardwareMap;
@@ -30,7 +28,7 @@ public class ERCNavX {
     private String _paramNavxRoll= "NavX Roll";
     private String _paramNavxPitch= "NavX Pitch";
 
-    public ERCNavX(LinearOpMode opMode, ERCParameterLogger logger) throws InterruptedException {
+    public ERCNavxIMU(LinearOpMode opMode, ERCParameterLogger logger) throws InterruptedException {
 
         _opMode = opMode;
         _hardwareMap = opMode.hardwareMap;
