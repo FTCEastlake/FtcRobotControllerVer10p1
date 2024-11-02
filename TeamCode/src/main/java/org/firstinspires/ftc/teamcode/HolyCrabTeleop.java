@@ -36,7 +36,7 @@ public class HolyCrabTeleop extends LinearOpMode {
     ERCLed _led;
     ERCColorSensor _color;
     ERCTouchSensor _touch;
-    //ERCNavX _navX;
+    ERCNavX _navX;
 
 
 
@@ -48,8 +48,8 @@ public class HolyCrabTeleop extends LinearOpMode {
         while (!isStarted())
         {
             _arm.setArm();
-            _led.setLedColor();
-            //_navX.getStatus();
+            //_led.setLedColor();
+            _navX.getStatus();
         }
 
         //******************************
@@ -67,6 +67,7 @@ public class HolyCrabTeleop extends LinearOpMode {
             _mecanumDrive.manualDrive();
             updateLogAndTelemetry();
 //            _color.getColor();
+            _navX.getStatus();
         }
     }
 
@@ -89,8 +90,8 @@ public class HolyCrabTeleop extends LinearOpMode {
                 null);
         _mecanumDrive.setRobotType(MecanumDrive.RobotType.HolyCrab);
         _arm = new ERCArm(this, _logger);
-        _led = new ERCLed(this, _logger);
-        //_navX = new ERCNavX(this, _logger);
+        //_led = new ERCLed(this, _logger);
+        _navX = new ERCNavX(this, _logger);
     }
 
 }
