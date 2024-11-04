@@ -24,8 +24,8 @@ public class ERCArm {
     private String _paramArmLsy = "Arm lsy";
 
     // Give a buffer of 200 to lessen gear grinding.
-    private int _minEncoderVal = 500;
-    private int _maxEncoderVal = 11000; // max looks like it's 11500
+    private int _minEncoderVal = 400;
+    private int _maxEncoderVal = 8800; // max looks like it's 9200
     private int _currentEncoderVal;
 
     private DcMotor.RunMode _runMode;
@@ -111,15 +111,11 @@ public class ERCArm {
 
     public void setArm() {
 
-//        if (_gamepad2.a)
-//            setManualOverride();
-//        else
-//            setNormalMode();
-
         if (_gamepad2.a)
-            setNormalMode();
-        else
             setManualOverride();
+        else
+            setNormalMode();
+
 
         _leftEncoderVal = _armLeft.getCurrentPosition();
         _rightEncoderVal = _armRight.getCurrentPosition();

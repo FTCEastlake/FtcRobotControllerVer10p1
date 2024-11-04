@@ -20,18 +20,21 @@ import java.util.HashMap;
 
 public class ERCMecanumDrive {
 
-    public enum RobotType {
-        Standard,
-        HolyCrab
-    }
+//    public enum RobotType {
+//        Standard,
+//        HolyCrab
+//    }
+
+    ERCGlobalConfig _glbConfig = ERCGlobalConfig.getInstance();
+
     // Note: Logitech 310 button mappings can be referenced here
     // https://gm0.org/en/latest/docs/software/tutorials/gamepad.html
     private LinearOpMode _opMode;
     private HardwareMap _hardwareMap;
     private ERCParameterLogger _logger;
     private Gamepad _gamepad1;
-    private ERCRevIMU _imu = null;
     private ERCVision _vision = null;
+    private ERCImuInterface _imu;
 
     // Declare motors
     private DcMotor _frontLeft = null;
@@ -62,10 +65,7 @@ public class ERCMecanumDrive {
     private final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
     private final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
 
-    public ERCMecanumDrive(LinearOpMode opMode, ERCParameterLogger logger,
-                           RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection,
-                           RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection,
-                           ERCVision vision){
+    public ERCMecanumDrive(LinearOpMode opMode, ERCParameterLogger logger, ERCVision vision) throws InterruptedException {
 
         _opMode = opMode;
         _hardwareMap = opMode.hardwareMap;
@@ -73,13 +73,13 @@ public class ERCMecanumDrive {
         _logger = logger;
         _vision = vision;
 
-        init(logoFacingDirection, usbFacingDirection);
+        init();
     }
 
-    private void init(RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection,
-                      RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection)
-    {
-        _imu = new ERCRevIMU(_opMode, _logger, logoFacingDirection, usbFacingDirection);
+    private void init() throws InterruptedException {
+
+        // Select the IMU to use.
+        _imu  = _glbConfig.useNavxImu ? new ERCNavxIMU(_opMode, _logger) : new ERCRevIMU(_opMode, _logger);
 
         // Make sure your ID's match your configuration
         _frontLeft = _hardwareMap.dcMotor.get("frontLeft");
@@ -87,17 +87,29 @@ public class ERCMecanumDrive {
         _backLeft = _hardwareMap.dcMotor.get("backLeft");
         _backRight = _hardwareMap.dcMotor.get("backRight");
 
-        // Reverse the right side motors. This may be wrong for your setup.
-        // If your robot moves backwards when commanded to go forwards,
-        // reverse the left side instead.
-        if (logoFacingDirection == RevHubOrientationOnRobot.LogoFacingDirection.DOWN) {
-            _frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-            _backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        switch (_glbConfig.robotType) {
+            case HolyCrab:
+                // Both front wheels have motors that are perpendicular to the wheels.
+                // Reverse the current directions of the back wheels to align properly.
+                _frontLeft.setDirection(DcMotorSimple.Direction.FORWARD);
+                _backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+                _frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+                _backRight.setDirection(DcMotorSimple.Direction.FORWARD);
+                break;
+
+            default:
+                if (_glbConfig.hubLogoFacingDir == RevHubOrientationOnRobot.LogoFacingDirection.DOWN) {
+                    _frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+                    _backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+                }
+                else {
+                    _frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+                    _backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+                }
+                break;  // nothing to alter
         }
-        else {
-            _frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-            _backRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        }
+
 
         // Add all of the parameters you want to see on the driver hub display.
         _logger.addParameter(_paramLsx);
@@ -105,22 +117,6 @@ public class ERCMecanumDrive {
         _logger.addParameter(_paramRsx);
 
         resetYaw();
-    }
-
-    public void setRobotType(RobotType roboType)
-    {
-        switch (roboType) {
-            case HolyCrab:
-                // Both front wheels have motors that are perpendicular to the wheels.
-                // Reverse the current directions of the back wheels to align properly.
-                _backLeft.setDirection(_backLeft.getDirection().inverted());
-                _backRight.setDirection(_backRight.getDirection().inverted());
-                break;
-            default:
-                break;  // nothing to alter
-
-        }
-
     }
 
     public void resetYaw()
@@ -211,14 +207,14 @@ public class ERCMecanumDrive {
         _backRight.setPower(rightBackPower);
     }
 
-    public void autoDriveAlign(int tagID, double distanceInches) {
+    public void autoDriveAlign(int tagID, double distanceInches, boolean isAutonomousMode) {
 
         // Align to AprilTag
         String msg = "";
         boolean includeDistance = distanceInches > 0;
         boolean isAligned = false;
         double timeoutLimitSec = _opMode.getRuntime() + 2.0;
-        while (!isAligned)
+        while ((!isAligned) && (isAutonomousMode || _gamepad1.right_bumper))
         {
             AprilTagDetection foundTag = _vision.detectAprilTag(tagID);
             if (foundTag != null)
@@ -243,12 +239,15 @@ public class ERCMecanumDrive {
                 // Apply appropriate power for 40ms then scale back to 33% of power to give vision time to process image for next calculation.
                 // You can tweak the sleep time or power factor to optimize cycle time.
                 autoDrive(drive, strafe, turn);
-                _opMode.sleep(30);      // 40ms is based on a pipeline of about 25-30ms and overhead of about 3ms
-                double powerFactor = 0.33;
+                //_opMode.sleep(30);      // 40ms is based on a pipeline of about 25-30ms and overhead of about 3ms
+                _opMode.sleep(75);
+                //double powerFactor = 0.33;
+                double powerFactor = 2.0;
                 autoDrive(drive * powerFactor, strafe * powerFactor, turn * powerFactor);
 
                 // Reset timeout for next iteration
-                timeoutLimitSec = _opMode.getRuntime() + 2.0;
+                //timeoutLimitSec = _opMode.getRuntime() + 2.0;
+                timeoutLimitSec = 0;
 
                 boolean withinLimitStrafe = abs(strafe) <= 0.05 ? true : false;
                 boolean withinLimitsTurn = abs(turn) <= 0.02 ? true : false;

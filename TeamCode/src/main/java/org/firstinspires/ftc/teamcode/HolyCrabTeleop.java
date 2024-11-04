@@ -1,14 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Log;
-
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 
 @TeleOp(name = "HolyCrabTeleop")
@@ -30,13 +26,15 @@ public class HolyCrabTeleop extends LinearOpMode {
     //    Motor port1: "armRight"   (GoBILDA 5202/3/4 series)
     //    I2C port0: "imu2"         (navX2-Micro)
 
+    ERCGlobalConfig _glbConfig = ERCGlobalConfig.getInstance();
+
     ERCParameterLogger _logger;
-    MecanumDrive _mecanumDrive;
+    ERCMecanumDrive _mecanumDrive;
+    ERCVision _vision;
     ERCArm _arm;
     ERCLed _led;
     ERCColorSensor _color;
     ERCTouchSensor _touch;
-    //ERCNavX _navX;
 
 
 
@@ -47,9 +45,16 @@ public class HolyCrabTeleop extends LinearOpMode {
 
         while (!isStarted())
         {
-            _arm.setArm();
+            //_arm.setArm();
             //_led.setLedColor();
-            //_navX.getStatus();
+            //_vision.detectAprilTag(-1);
+            boolean isRed = _vision.ColorDetection(true, false, false);
+            boolean isBlue = _vision.ColorDetection(false, true, false);
+            boolean isYellow = _vision.ColorDetection(false, false, true);
+            _logger.updateStatus("red (" + (isRed ? "true" : "false") +
+                    "), blue (" + (isBlue ? "true" : "false") +
+                    "), yellow (" + (isYellow ? "true" : "false") );
+            _logger.updateAll();
         }
 
         //******************************
@@ -64,10 +69,12 @@ public class HolyCrabTeleop extends LinearOpMode {
 //            if (gamepad1.start)
 //                _mecanumDrive.resetYaw();
 
-            _mecanumDrive.manualDrive();
+            if (gamepad1.right_bumper)
+                _mecanumDrive.autoDriveAlign(-1, 12, false);
+            else
+                _mecanumDrive.manualDrive();
             updateLogAndTelemetry();
 //            _color.getColor();
-            //_navX.getStatus();
         }
     }
 
@@ -81,17 +88,17 @@ public class HolyCrabTeleop extends LinearOpMode {
 
     private void initRobot() throws InterruptedException {
 
+        // Note: this is where you change the default configurations for your robot.
+        _glbConfig.useNavxImu = true;
+        _glbConfig.enableVisionColorSensor = true;
+
         _logger = new ERCParameterLogger(this);
+        _vision = new ERCVision(this, _logger);
 //        _color = new ERCColorSensor(this, _logger);
 //        _touch = new ERCTouchSensor(this, _logger);
-        _mecanumDrive = new MecanumDrive(this, _logger,
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD,
-                null);
-        _mecanumDrive.setRobotType(MecanumDrive.RobotType.HolyCrab);
+        _mecanumDrive = new ERCMecanumDrive(this, _logger, _vision);
         _arm = new ERCArm(this, _logger);
         //_led = new ERCLed(this, _logger);
-        //_navX = new ERCNavX(this, _logger);
     }
 
 }

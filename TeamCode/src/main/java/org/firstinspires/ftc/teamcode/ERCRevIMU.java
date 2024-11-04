@@ -8,7 +8,9 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-public class ERCRevIMU {
+public class ERCRevIMU implements ERCImuInterface {
+
+    ERCGlobalConfig _glbConfig = ERCGlobalConfig.getInstance();
 
     // Note: Logitech 310 button mappings can be referenced here
     // https://gm0.org/en/latest/docs/software/tutorials/gamepad.html
@@ -17,25 +19,22 @@ public class ERCRevIMU {
     private ERCParameterLogger _logger;
     private IMU _imu = null;
 
-    public ERCRevIMU(LinearOpMode opMode, ERCParameterLogger logger,
-                     RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection,
-                     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection){
+    public ERCRevIMU(LinearOpMode opMode, ERCParameterLogger logger){
 
         _opMode = opMode;
         _hardwareMap = opMode.hardwareMap;
         _logger = logger;
 
-        init(logoFacingDirection, usbFacingDirection);
+        init();
     }
 
-    private void init(RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection,
-                      RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection) {
+    private void init() {
 
         // Retrieves the (first) device with the indicated name which is also an instance of the indicated class or interface.
         // First IMU is on the controller hub (version BHI260AP)
         _imu = _hardwareMap.get(IMU.class, "imu");
         // Adjust the orientation parameters to match your robot
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(logoFacingDirection, usbFacingDirection));
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(_glbConfig.hubLogoFacingDir, _glbConfig.hubUsbFacingDir));
         // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
         _imu.initialize(parameters);
     }

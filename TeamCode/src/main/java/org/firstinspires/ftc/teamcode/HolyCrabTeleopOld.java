@@ -1,15 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 
-@TeleOp(name = "HolyCrabTeleopNew")
+@TeleOp(name = "HolyCrabTeleopOld")
 @Disabled
-public class HolyCrabTeleopNew extends LinearOpMode {
+public class HolyCrabTeleopOld extends LinearOpMode {
 
     //**************************************************************
     // HolyCrab hardware configuration:
@@ -28,12 +33,12 @@ public class HolyCrabTeleopNew extends LinearOpMode {
     //    I2C port0: "imu2"         (navX2-Micro)
 
     ERCParameterLogger _logger;
-    ERCMecanumDrive _mecanumDrive;
+    MecanumDrive _mecanumDrive;
     ERCArm _arm;
     ERCLed _led;
     ERCColorSensor _color;
     ERCTouchSensor _touch;
-    //ERCNavxIMU _navX;
+    //ERCNavX _navX;
 
 
 
@@ -46,7 +51,6 @@ public class HolyCrabTeleopNew extends LinearOpMode {
         {
             _arm.setArm();
             //_led.setLedColor();
-            //_navX.getStatus();
         }
 
         //******************************
@@ -61,10 +65,10 @@ public class HolyCrabTeleopNew extends LinearOpMode {
 //            if (gamepad1.start)
 //                _mecanumDrive.resetYaw();
 
+            _arm.setArm();
             _mecanumDrive.manualDrive();
             updateLogAndTelemetry();
 //            _color.getColor();
-            //_navX.getStatus();
         }
     }
 
@@ -81,14 +85,14 @@ public class HolyCrabTeleopNew extends LinearOpMode {
         _logger = new ERCParameterLogger(this);
 //        _color = new ERCColorSensor(this, _logger);
 //        _touch = new ERCTouchSensor(this, _logger);
-        _mecanumDrive = new ERCMecanumDrive(this, _logger,
+        _mecanumDrive = new MecanumDrive(this, _logger,
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD,
                 null);
-        _mecanumDrive.setRobotType(ERCMecanumDrive.RobotType.HolyCrab);
+        _mecanumDrive.setRobotType(MecanumDrive.RobotType.HolyCrab);
         _arm = new ERCArm(this, _logger);
         //_led = new ERCLed(this, _logger);
-        //_navX = new ERCNavxIMU(this, _logger);
+        //_navX = new ERCNavX(this, _logger);
     }
 
 }

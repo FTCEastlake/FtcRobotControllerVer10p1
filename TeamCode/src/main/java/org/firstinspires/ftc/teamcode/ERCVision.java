@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Size;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -20,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 public class ERCVision {
 
+    ERCGlobalConfig _glbConfig = ERCGlobalConfig.getInstance();
+
     LinearOpMode _opMode;
     HardwareMap _hardwareMap;
     ERCParameterLogger _logger;
@@ -30,12 +33,12 @@ public class ERCVision {
 
     private static final int DESIRED_TAG_ID = -1;     // Choose the tag you want to approach or set to -1 for ANY tag.
 
-    String _paramId         = "AprilTag ID";
-    String _paramRange      = "AprilTag Range";
-    String _paramBearing    = "AprilTag Bearing";
-    String _paramYaw        = "AprilTag Yaw";
-    String _paramDetections = "AprilTag Detections";
-    String _paramColor      = "Detected Color";
+    private String _paramId         = "AprilTag ID";
+    private String _paramRange      = "AprilTag Range";
+    private String _paramBearing    = "AprilTag Bearing";
+    private String _paramYaw        = "AprilTag Yaw";
+    private String _paramDetections = "AprilTag Detections";
+    private String _paramColor      = "Detected Color";
 
     Boolean _isCameraReady = false;
 
@@ -51,8 +54,12 @@ public class ERCVision {
     private void init()
     {
         _colorSensor = new PredominantColorProcessor.Builder()
-                //.setRoi(ImageRegion.asUnityCenterCoordinates(-0.1, 0.1, 0.1, -0.1))
-                .setRoi(ImageRegion.asUnityCenterCoordinates(-0.5, 0.5, 0.5, -0.5))
+                // Coordinates within camera frame to detect color.
+                // The color must be consume over 50% of this target.
+                // Note: the wider the window to detect color, the more processing power it needs
+                //       which will slow down other processors (AprilTags, etc.)
+                .setRoi(ImageRegion.asUnityCenterCoordinates(-0.1, 0.1, 0.1, -0.1))
+                //.setRoi(ImageRegion.asUnityCenterCoordinates(-0.5, 0.5, 0.5, -0.5))
                 .setSwatches(
                         PredominantColorProcessor.Swatch.RED,
                         PredominantColorProcessor.Swatch.BLUE,
@@ -61,8 +68,14 @@ public class ERCVision {
                         PredominantColorProcessor.Swatch.WHITE)
                 .build();
 
+
         // Create the AprilTag processor by using a builder.
-        _aprilTag = new AprilTagProcessor.Builder().build();
+        if (_glbConfig.useGoBuildaCamera)
+            _aprilTag = new AprilTagProcessor.Builder()
+                    .setLensIntrinsics(481.985, 481.985, 334.203, 241.948)
+                    .build();
+        else
+            _aprilTag = new AprilTagProcessor.Builder().build();
 
         // Adjust Image Decimation to trade-off detection-range for detection-rate.
         // e.g. Some typical detection data using a Logitech C920 WebCam
@@ -74,11 +87,16 @@ public class ERCVision {
         _aprilTag.setDecimation(2);
 
         // Create the vision portal by using a builder.
-        _visionPortal = new VisionPortal.Builder()
-                .setCamera(_hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .addProcessor(_aprilTag)
-                .addProcessor(_colorSensor)
-                .build();
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+        builder.setCamera(_hardwareMap.get(WebcamName.class, "Webcam 1"));
+        if (_glbConfig.useGoBuildaCamera)
+            builder.setCameraResolution(new Size(640,480));
+        builder.addProcessor(_aprilTag);
+        builder.addProcessor(_colorSensor);     // using this will slow down camera pipeline.
+        _visionPortal = builder.build();
+
+        ColorDetectionEnable(_glbConfig.enableVisionColorSensor);
+
 
         // Add all of the parameters you want to see on the driver hub display.
         _logger.addParameter(_paramId);
@@ -124,6 +142,8 @@ public class ERCVision {
         _logger.updateParameter(_paramDetections, currentDetections.size());
         for (AprilTagDetection detection : currentDetections) {
             // Look to see if we have size info on this tag.
+            // NOTE: METADATA ARE ONLY VALID FOR CURRENT SEASON'S APRIL TAGS!!!
+            // Tags outside of current season will return detection.metadata as null.
             if (detection.metadata != null) {
                 //  Check to see if we want to track towards this tag.
                 if ((tagIndex < 0) || (detection.id == tagIndex)) {
