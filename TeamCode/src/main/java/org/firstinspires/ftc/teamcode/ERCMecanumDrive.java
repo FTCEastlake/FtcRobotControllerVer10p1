@@ -249,12 +249,12 @@ public class ERCMecanumDrive {
                 //timeoutLimitSec = _opMode.getRuntime() + 2.0;
                 timeoutLimitSec = 0;
 
-                boolean withinLimitStrafe = abs(strafe) <= 0.05 ? true : false;
-                boolean withinLimitsTurn = abs(turn) <= 0.02 ? true : false;
+                boolean withinLimitStrafe = abs(strafe) <= 0.06;
+                boolean withinLimitsTurn = abs(turn) <= 0.02;
                 if (withinLimitStrafe && withinLimitsTurn)
                 {
                     //isAligned = (includeDistance && (rangeError > 2.0)) ? false : true;
-                    isAligned = (includeDistance && (rangeError > 2.0)) ? false : true;
+                    isAligned = !includeDistance || (!(rangeError > 2.0));
                     msg = String.format("Auto drive %5.2f, Strafe %5.2f, Turn %5.2f, isAligned = %s \n", drive, strafe, turn, isAligned ? "true" : "false");
                     msg += String.format("rangeError %5.2f, headingError %5.2f, yawError %5.2f \n", rangeError, headingError, yawError);
                     _logger.updateStatus(msg);

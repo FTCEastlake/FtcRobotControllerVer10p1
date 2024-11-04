@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class ERCArm {
 
+    ERCGlobalConfig _glbConfig = ERCGlobalConfig.getInstance();
+
     private LinearOpMode _opMode;
     private HardwareMap _hardwareMap;
     private ERCParameterLogger _logger;
@@ -24,8 +26,6 @@ public class ERCArm {
     private String _paramArmLsy = "Arm lsy";
 
     // Give a buffer of 200 to lessen gear grinding.
-    private int _minEncoderVal = 400;
-    private int _maxEncoderVal = 8800; // max looks like it's 9200
     private int _currentEncoderVal;
 
     private DcMotor.RunMode _runMode;
@@ -75,12 +75,12 @@ public class ERCArm {
         int encoderVal = 0;
         if (_gamepad2.y) {
             isButtonPressed = true;
-            encoderVal = 2000;//_maxEncoderVal;
+            encoderVal = 2000;//_glbConfig.maxEncoderVal;
         }
         else if (_gamepad2.x) {
 
             isButtonPressed = true;
-            encoderVal = 1000; //_maxEncoderVal / 2;
+            encoderVal = 1000; //_glbConfig.maxEncoderVal / 2;
         }
         else if (_gamepad2.a)
         {
@@ -138,7 +138,7 @@ public class ERCArm {
         }
 
         _lsy = _gamepad2.left_stick_y;  // down direction is positive value
-        _currentEncoderVal = _lsy < 0 ? _maxEncoderVal : _minEncoderVal;
+        _currentEncoderVal = _lsy < 0 ? _glbConfig.maxEncoderVal : _glbConfig.minEncoderVal;
         _armLeft.setTargetPosition(_currentEncoderVal);
         _armRight.setTargetPosition(-_currentEncoderVal);
 

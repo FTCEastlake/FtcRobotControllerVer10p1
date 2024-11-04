@@ -41,5 +41,10 @@ public class ERCGlobalConfig {
     public boolean useGoBuildaCamera = true;
     public boolean enableVisionColorSensor = true;
 
+    // Arm configurations
+    // Back off encoder min and max values so the gears won't grind.
+    public int minEncoderVal = 400;     // min is zero
+    public int maxEncoderVal = 8800;    // max looks like it's 9200
+
 
 }
