@@ -45,7 +45,7 @@ public class HolyCrabTeleop extends LinearOpMode {
 
         while (!isStarted())
         {
-            //_arm.setArm();
+            _arm.setArm();
             //_led.setLedColor();
             //_vision.detectAprilTag(-1);
             boolean isRed = _vision.ColorDetection(true, false, false);
