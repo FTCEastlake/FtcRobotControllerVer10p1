@@ -11,7 +11,6 @@ public class ERCLed {
     private LinearOpMode _opMode;
     private HardwareMap _hardwareMap;
     private ERCParameterLogger _logger;
-    private Gamepad _gamepad2;
     RevBlinkinLedDriver _blinkinLed;
 
     //private String _paramLedColor= "LED color";
@@ -20,7 +19,6 @@ public class ERCLed {
 
         _opMode = opMode;
         _hardwareMap = opMode.hardwareMap;
-        _gamepad2 = _opMode.gamepad2;
         _logger = logger;
 
         init();
@@ -34,17 +32,42 @@ public class ERCLed {
         //_logger.addParameter(_paramLedColor);
     }
 
-    public void setLedColor()
+    public void setLedColor(RevBlinkinLedDriver.BlinkinPattern color)
     {
-        if (_gamepad2.y)
-            _blinkinLed.setPattern(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
-        else if (_gamepad2.b)
-            _blinkinLed.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
-        else if (_gamepad2.a)
-            _blinkinLed.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
-        else if (_gamepad2.x)
-            _blinkinLed.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
-        else
-            _blinkinLed.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+        _blinkinLed.setPattern(color);
     }
+
+    public void setLedColorRed() {
+        _blinkinLed.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+    }
+
+    public void setLedColorBlue() {
+        _blinkinLed.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLUE);
+    }
+
+    public void setLedColorGreen() {
+        _blinkinLed.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+    }
+
+    public void setLedColorYellow() {
+        _blinkinLed.setPattern(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
+    }
+
+    public void setLedColorBlack() {
+        _blinkinLed.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+    }
+
+    public void setLedColorWhite() {
+        _blinkinLed.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
+    }
+
+    // There is a way to program the strip to 5V or 12V but it's only for FRC APIs right now.
+    // Hopefully this API will come to FTC someday.
+    // https://www.chiefdelphi.com/t/rev-blinkin-resetting-strip-mode-randomly/432510/12
+//    public void setStripTo12V() {
+//        _blinkinLed.setPulseTime(2.145);    // 12V strip = 2145 us
+//    }
+//    public void setStripTo5V() {
+//        _blinkinLed.setPulseTime(2.125);    // 5V strip = 2125 us
+//    }
 }

@@ -40,6 +40,10 @@ public class ERCGlobalConfig {
     // Vision configurations
     public boolean useGoBuildaCamera = true;
     public boolean enableVisionColorSensor = true;
+    public double visionImageRegionLeft = -0.1;     // 0 = center, -1 = left
+    public double visionImageRegionRight = 0.1;     // 0 = center, +1 = right
+    public double visionImageRegionTop = 0.1;       // 0 = center, +1 = top
+    public double visionImageRegionBottom = -0.1;   // 0 = center, -1 = bottom
 
     // Arm configurations
     // Back off encoder min and max values so the gears won't grind.

@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -39,7 +40,7 @@ public class ERCColorSensor {
     }
 
     private void init() {
-        _colorSensor = _hardwareMap.get(RevColorSensorV3.class, "color sensor v3");
+        _colorSensor = _hardwareMap.get(RevColorSensorV3.class, "revColorV3");
 
         // Add all of the parameters you want to see on the driver hub display.
         _logger.addParameter(_paramRedVal);

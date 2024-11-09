@@ -31,6 +31,10 @@ public class ERCVision {
     private AprilTagProcessor _aprilTag = null;              // Used for managing the AprilTag detection process.
     private PredominantColorProcessor _colorSensor = null;
 
+    private boolean _redMatch = false;
+    private boolean _blueMatch = false;
+    private boolean _yellowMatch = false;
+
     private static final int DESIRED_TAG_ID = -1;     // Choose the tag you want to approach or set to -1 for ANY tag.
 
     private String _paramId         = "AprilTag ID";
@@ -58,7 +62,9 @@ public class ERCVision {
                 // The color must be consume over 50% of this target.
                 // Note: the wider the window to detect color, the more processing power it needs
                 //       which will slow down other processors (AprilTags, etc.)
-                .setRoi(ImageRegion.asUnityCenterCoordinates(-0.1, 0.1, 0.1, -0.1))
+                .setRoi(ImageRegion.asUnityCenterCoordinates(
+                        _glbConfig.visionImageRegionLeft, _glbConfig.visionImageRegionTop,
+                        _glbConfig.visionImageRegionRight, _glbConfig.visionImageRegionBottom))
                 //.setRoi(ImageRegion.asUnityCenterCoordinates(-0.5, 0.5, 0.5, -0.5))
                 .setSwatches(
                         PredominantColorProcessor.Swatch.RED,
@@ -107,31 +113,45 @@ public class ERCVision {
         _logger.addParameter(_paramColor);
     }
 
-    public boolean ColorDetection(boolean detectRed, boolean detectBlue, boolean detectYellow)
-    {
-        boolean colorIsMatched = false;
 
+    //*******************************************************************************
+    // Color detection
+    //*******************************************************************************
+    private void ColorDetectionEnable(boolean enable)
+    {
+        _visionPortal.setProcessorEnabled(_colorSensor, enable);
+    }
+    public void DetectColor()
+    {
         // Request the most recent color analysis.
         // This will return the closest matching colorSwatch and the predominant RGB color.
         // Note: to take actions based on the detected color, simply use the colorSwatch in a comparison or switch.
         //  eg:
         //      if (result.closestSwatch == PredominantColorProcessor.Swatch.RED) {... some code  ...}
         PredominantColorProcessor.Result result = _colorSensor.getAnalysis();
-        boolean redMatch = detectRed && (result.closestSwatch == PredominantColorProcessor.Swatch.RED);
-        boolean blueMatch = detectBlue && (result.closestSwatch == PredominantColorProcessor.Swatch.BLUE);
-        boolean yellowMatch = detectYellow && (result.closestSwatch == PredominantColorProcessor.Swatch.YELLOW);
-        String msg = (redMatch ? "RED " : "") + (blueMatch ? "BLUE " : "") + (yellowMatch ? "YELLOW " : "");
+        _redMatch = result.closestSwatch == PredominantColorProcessor.Swatch.RED;
+        _blueMatch = result.closestSwatch == PredominantColorProcessor.Swatch.BLUE;
+        _yellowMatch = result.closestSwatch == PredominantColorProcessor.Swatch.YELLOW;
+        String msg = (_redMatch ? "RED " : "") + (_blueMatch ? "BLUE " : "") + (_yellowMatch ? "YELLOW " : "");
         _logger.updateParameter(_paramColor, msg);
         _logger.updateAll();
-
-        return redMatch || blueMatch || yellowMatch;
+    }
+    public boolean isColorDetectedRed() {
+        return _redMatch;
+    }
+    public boolean isColorDetectedBlue() {
+        return _blueMatch;
+    }
+    public boolean isColorDetectedYellow() {
+        return _yellowMatch;
     }
 
-    public void ColorDetectionEnable(boolean enable)
-    {
-        _visionPortal.setProcessorEnabled(_colorSensor, enable);
-    }
 
+
+
+    //*******************************************************************************
+    // April Tag
+    //*******************************************************************************
     public AprilTagDetection detectAprilTag(int tagIndex)
     {
         boolean targetFound = false;    // Set to true when an AprilTag target is detected
@@ -179,6 +199,10 @@ public class ERCVision {
         return _desiredTag;
     }
 
+
+    //*******************************************************************************
+    // Camera settings
+    //*******************************************************************************
     public int getCameraExposureMs() {
         return (int)_visionPortal.getCameraControl(ExposureControl.class).getExposure(TimeUnit.MILLISECONDS);
     }
