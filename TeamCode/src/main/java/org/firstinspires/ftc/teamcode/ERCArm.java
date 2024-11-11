@@ -1,12 +1,26 @@
 package org.firstinspires.ftc.teamcode;
 
+import static java.lang.Thread.sleep;
+
 import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 public class ERCArm {
+
+    //Gamepad2:
+    // Arm Slider:
+    // left stick Y: raise or lower arm slider
+    // right bumper: manual override hard limits
+    //
+    // Arm:
+    // Y: arm up
+    // X: arm down
+    // B: claw open
+    // A: claw close
 
     ERCGlobalConfig _glbConfig = ERCGlobalConfig.getInstance();
 
@@ -15,17 +29,22 @@ public class ERCArm {
     private ERCParameterLogger _logger;
     private Gamepad _gamepad2;
 
-    private DcMotor _armLeft = null;
-    private DcMotor _armRight = null;
+    private DcMotor _slideLeft = null;
+    private DcMotor _slideRight = null;
+    private Servo _armServo;
+    private Servo _clawServo;
 
     private int _leftEncoderVal;
     private int _rightEncoderVal;
+    private double _armPosition;
+    private double _clawPosition;
 
-    private String _paramLeftEncoder = "Arm Left Encoder";
-    private String _paramRightEncoder = "Arm Right Encoder";
-    private String _paramArmLsy = "Arm lsy";
+    private String _paramLeftEncoder = "Arm Slider Left Encoder";
+    private String _paramRightEncoder = "Arm Slider Right Encoder";
+    private String _paramArmPosition= "Arm Position";
+    private String _paramClawPosition = "Claw Position";
+//    private String _paramArmLsy = "Arm lsy";
 
-    // Give a buffer of 200 to lessen gear grinding.
     private int _currentEncoderVal;
 
     private DcMotor.RunMode _runMode;
@@ -43,119 +62,153 @@ public class ERCArm {
 
     private void init() {
 
-        _armLeft = _hardwareMap.dcMotor.get("armLeft");
-        _armRight = _hardwareMap.dcMotor.get("armRight");
+        _slideLeft = _hardwareMap.dcMotor.get("slideLeft");
+        _slideRight = _hardwareMap.dcMotor.get("slideRight");
+        _armServo = _hardwareMap.get(Servo.class, "armServo");
+        _clawServo = _hardwareMap.get(Servo.class, "clawServo");
 
-        _armLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        _armRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        _slideLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        _slideRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // Note: you must set target position before setting the mode to RUN_TO_POSITION.
         _currentEncoderVal = 0;
-        _armLeft.setTargetPosition(_currentEncoderVal);
-        _armRight.setTargetPosition(_currentEncoderVal);
+        _slideLeft.setTargetPosition(_currentEncoderVal);
+        _slideRight.setTargetPosition(_currentEncoderVal);
         _runMode = DcMotor.RunMode.RUN_TO_POSITION;
-        _armLeft.setMode(_runMode);
-        _armRight.setMode(_runMode);
+        _slideLeft.setMode(_runMode);
+        _slideRight.setMode(_runMode);
+
+        _armServo.setPosition(0.0);
+        _clawServo.setPosition(0.0);
+        _armPosition = _armServo.getPosition();
+        _clawPosition = _clawServo.getPosition();
 
 
         // Add all of the parameters you want to see on the driver hub display.
         _logger.addParameter(_paramLeftEncoder);
         _logger.addParameter(_paramRightEncoder);
-        _logger.addParameter(_paramArmLsy);
+        _logger.addParameter(_paramArmPosition);
+        _logger.addParameter(_paramClawPosition);
+        _logger.updateAll();;
     }
 
-    public void setArmWithButtons() {
+    public void setArm() throws InterruptedException {
 
-//        // max right encoder val = -11500
-//        double lsy = _gamepad2.left_stick_y;
-//        _armLeft.setPower(-1 * lsy * 1.0);  // real code
-//        _armRight.setPower(lsy * 1.0);
+        if (_gamepad2.right_bumper) setSliderManualOverride(); else setSliderNormalMode();
 
-        boolean isButtonPressed = false;
-        int encoderVal = 0;
-        if (_gamepad2.y) {
-            isButtonPressed = true;
-            encoderVal = 2000;//_glbConfig.maxEncoderVal;
-        }
-        else if (_gamepad2.x) {
+        if (_gamepad2.y) setArmUp();
+        if (_gamepad2.x) setArmDown();
+        if (_gamepad2.b) setClawOpen();
+        if (_gamepad2.a) setClawClose();
 
-            isButtonPressed = true;
-            encoderVal = 1000; //_glbConfig.maxEncoderVal / 2;
-        }
-        else if (_gamepad2.a)
-        {
-            isButtonPressed = true;
-            encoderVal = 0;
-        }
+        _armPosition = _armServo.getPosition();
+        _clawPosition = _clawServo.getPosition();
 
-        if (isButtonPressed)
-        {
-            _armLeft.setTargetPosition(encoderVal);
-            _armRight.setTargetPosition(-1 * encoderVal);
-            _armLeft.setPower(1.0);
-            _armRight.setPower(1.0);
-        }
+//        _leftEncoderVal = _slideLeft.getCurrentPosition();
+//        _rightEncoderVal = _slideRight.getCurrentPosition();
 
-
-
-        _leftEncoderVal = _armLeft.getCurrentPosition();
-        _rightEncoderVal = _armRight.getCurrentPosition();
-
-        DcMotor.RunMode runMode =  _armLeft.getMode();
+        DcMotor.RunMode runMode =  _slideLeft.getMode();
         _logger.updateStatus("Arm run mode = " + runMode);
-        _logger.updateParameter(_paramLeftEncoder, _leftEncoderVal);
-        _logger.updateParameter(_paramRightEncoder, _rightEncoderVal);
-        //_logger.updateParameter(_paramArmLsy, lsy);
+//        _logger.updateParameter(_paramLeftEncoder, _leftEncoderVal);
+//        _logger.updateParameter(_paramRightEncoder, _rightEncoderVal);
+        _logger.updateParameter(_paramArmPosition, _armPosition);
+        _logger.updateParameter(_paramClawPosition, _clawPosition);
         _logger.updateAll();
     }
 
-    public void setArm() {
-
-        if (_gamepad2.a)
-            setManualOverride();
-        else
-            setNormalMode();
-
-
-        _leftEncoderVal = _armLeft.getCurrentPosition();
-        _rightEncoderVal = _armRight.getCurrentPosition();
-
-        DcMotor.RunMode runMode =  _armLeft.getMode();
-        _logger.updateStatus("Arm run mode = " + runMode);
-        _logger.updateParameter(_paramLeftEncoder, _leftEncoderVal);
-        _logger.updateParameter(_paramRightEncoder, _rightEncoderVal);
-        _logger.updateParameter(_paramArmLsy, _lsy);
-        _logger.updateAll();
+    public void setArmUp() {
+        _armServo.setPosition(0.0);
+    }
+    public void setArmDown() {
+        _armServo.setPosition(_glbConfig.maxArmPosition);
+    }
+    public void setArmPosition(double position) {
+        // Don't use this unless you really know what you're doing!
+        _armServo.setPosition(position);
     }
 
-    public void setNormalMode() {
+    public void setClawOpen() {
+        _clawServo.setPosition(0.0);
+    }
+    public void setClawClose() {
+        _clawServo.setPosition(_glbConfig.maxClawPosition);
+    }
 
+    public void setSliderNormalMode() {
+        _lsy = _gamepad2.left_stick_y;
+        setSliderEncoder(-_lsy);
+    }
+
+    public void setSliderEncoder(double upPower) {
         if (_runMode != DcMotor.RunMode.RUN_TO_POSITION)
         {
             _runMode = DcMotor.RunMode.RUN_TO_POSITION;
-            _armLeft.setMode(_runMode);
-            _armRight.setMode(_runMode);
+            _slideLeft.setMode(_runMode);
+            _slideRight.setMode(_runMode);
         }
 
-        _lsy = _gamepad2.left_stick_y;  // down direction is positive value
-        _currentEncoderVal = _lsy < 0 ? _glbConfig.maxEncoderVal : _glbConfig.minEncoderVal;
-        _armLeft.setTargetPosition(_currentEncoderVal);
-        _armRight.setTargetPosition(-_currentEncoderVal);
+        _currentEncoderVal = upPower > 0 ? _glbConfig.maxSliderEncoderVal : _glbConfig.minSliderEncoderVal;
+        _slideLeft.setTargetPosition(_currentEncoderVal);
+        _slideRight.setTargetPosition(-_currentEncoderVal);
 
-        _armLeft.setPower(_lsy);
-        _armRight.setPower(_lsy);
+        _slideLeft.setPower(upPower);
+        _slideRight.setPower(upPower);    // don't have to set negative as setTargetPosition() is already inverted
+        logSliderEncoderValues();
     }
 
-    public void setManualOverride() {
+    public void setSliderToZero() {
+        if (_runMode != DcMotor.RunMode.RUN_TO_POSITION)
+        {
+            _runMode = DcMotor.RunMode.RUN_TO_POSITION;
+            _slideLeft.setMode(_runMode);
+            _slideRight.setMode(_runMode);
+        }
+
+        _slideLeft.setTargetPosition(0);
+        _slideRight.setTargetPosition(0);
+        double power = 1.0;
+        while (true)
+        {
+            _leftEncoderVal = _slideLeft.getCurrentPosition();
+            _rightEncoderVal = _slideRight.getCurrentPosition();
+            logSliderEncoderValues();
+            if (_leftEncoderVal < 20)
+                break;
+
+            // Power values greater than 1.0 will be clipped at the lower level APIs
+            power = (((double)_leftEncoderVal) / _glbConfig.maxSliderEncoderVal) + 0.33;
+            if (power > 1.0) power = 1.0;
+            _slideLeft.setPower(power);
+            _slideRight.setPower(power);
+        }
+
+        _slideLeft.setPower(0.0);
+        _slideRight.setPower(0.0);
+    }
+
+    public void setSliderManualOverride() {
+        _lsy = _gamepad2.left_stick_y;
+        setSliderPower(-_lsy);
+    }
+
+    public void setSliderPower(double upPower) {
         if (_runMode != DcMotor.RunMode.RUN_WITHOUT_ENCODER)
         {
             _runMode = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
-            _armLeft.setMode(_runMode);
-            _armRight.setMode(_runMode);
+            _slideLeft.setMode(_runMode);
+            _slideRight.setMode(_runMode);
         }
 
-        _lsy = _gamepad2.left_stick_y;
-        _armLeft.setPower(-_lsy);
-        _armRight.setPower(_lsy);
+        _slideLeft.setPower(upPower);
+        _slideRight.setPower(-upPower);
+        logSliderEncoderValues();
+    }
+
+    private void logSliderEncoderValues() {
+        _leftEncoderVal = _slideLeft.getCurrentPosition();
+        _rightEncoderVal = _slideRight.getCurrentPosition();
+        _logger.updateParameter(_paramLeftEncoder, _leftEncoderVal);
+        _logger.updateParameter(_paramRightEncoder, _rightEncoderVal);
+        _logger.updateAll();
     }
 }

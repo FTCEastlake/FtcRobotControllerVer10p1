@@ -35,7 +35,7 @@ public class ERCGlobalConfig {
     RevHubOrientationOnRobot.UsbFacingDirection hubUsbFacingDir = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
     // IMU Configurations
-    public boolean useNavxImu = true;
+    public boolean useNavxImu = false;
 
     // Vision configurations
     public boolean useGoBuildaCamera = true;
@@ -47,8 +47,9 @@ public class ERCGlobalConfig {
 
     // Arm configurations
     // Back off encoder min and max values so the gears won't grind.
-    public int minEncoderVal = 400;     // min is zero
-    public int maxEncoderVal = 8800;    // max looks like it's 9200
-
+    public int minSliderEncoderVal = 50;     // min is zero
+    public int maxSliderEncoderVal = 8800;    // max looks like it's 9200
+    public double maxArmPosition = 0.31;
+    public double maxClawPosition = 0.29;
 
 }

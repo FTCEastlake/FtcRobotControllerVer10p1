@@ -65,7 +65,7 @@ public class ERCMecanumDrive {
     private final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
     private final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
 
-    public ERCMecanumDrive(LinearOpMode opMode, ERCParameterLogger logger, ERCVision vision) throws InterruptedException {
+    public ERCMecanumDrive(LinearOpMode opMode, ERCParameterLogger logger, ERCVision vision, boolean shouldResetYaw) throws InterruptedException {
 
         _opMode = opMode;
         _hardwareMap = opMode.hardwareMap;
@@ -73,10 +73,10 @@ public class ERCMecanumDrive {
         _logger = logger;
         _vision = vision;
 
-        init();
+        init(shouldResetYaw);
     }
 
-    private void init() throws InterruptedException {
+    private void init(boolean shouldResetYaw) throws InterruptedException {
 
         // Select the IMU to use.
         _imu  = _glbConfig.useNavxImu ? new ERCNavxIMU(_opMode, _logger) : new ERCRevIMU(_opMode, _logger);
@@ -116,7 +116,8 @@ public class ERCMecanumDrive {
         _logger.addParameter(_paramLsr);
         _logger.addParameter(_paramRsx);
 
-        resetYaw();
+        if (shouldResetYaw)
+            resetYaw();
     }
 
     public void resetYaw()
