@@ -20,7 +20,8 @@ public class ERCGlobalConfig {
 
     public enum RobotType {
         Standard,
-        HolyCrab
+        HolyCrab,
+        Frankenstein
     }
 
     //***********************************************************************
@@ -36,6 +37,11 @@ public class ERCGlobalConfig {
 
     // IMU Configurations
     public boolean useNavxImu = false;
+
+    // Drivetrain
+    public double drivePowerFast = 0.75;
+    public double drivePowerNormal = 0.50;
+    public double drivePowerSlow = 0.25;
 
     // Vision configurations
     public boolean useGoBuildaCamera = true;

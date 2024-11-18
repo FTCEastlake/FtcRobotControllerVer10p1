@@ -47,9 +47,9 @@ public class ERCMecanumDrive {
     private String _paramRsx = "Right Stick X";
 
     //shorten controller values for readability, values are "float" data type internally
-    private double _lsx = 0;      //lsx = left stick x
-    private double _lsy = 0;      //lsy = right stick y
-    private double _rsx = 0;     //rsx = right stick x
+    private double _lsx = 0;    //lsx = left stick x
+    private double _lsy = 0;    //lsy = left stick y
+    private double _rsx = 0;    //rsx = right stick x
 
     private double _powerFactor = 1.0;     // 1.0 = full power, 0.0 = no power
     private double _strafeMagnitude = 1.1;

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import android.util.Log;
 
@@ -22,11 +24,21 @@ public class ERCParameterLogger {
     Telemetry.Item _statusUpdate;
     String _statusCaption= "Status";
 
+
+    private ElapsedTime _cycleTime = new ElapsedTime();
+    private boolean _enableCycleTime = false;
+    private double _cycleTimeMin = 100.0, _cycleTimeMax = 0.0, _cycleTimeAvg = 0.0;
+    private double _cycleTimePrevious = 0.0, _cycleTimeCurrent = 0.0, _cycleTimeDelta = 0.0;
+
+    private String _paramCycleTimeMin = "Cycle Time Min (ms)";
+    private String _paramCycleTimeMax = "Cycle Time Max (ms";
+    private String _paramCycleTimeAvg = "Cycle Time Avg (ms)";
+
     // We need to use the telemetry belonging to LinearOpMode, otherwise it will throw an exception.
-    public ERCParameterLogger(LinearOpMode opMode){
+    public ERCParameterLogger(LinearOpMode opMode, boolean enableCycleTimeLogging){
         _opMode = opMode;
         _telemetry = _opMode.telemetry;
-
+        _enableCycleTime = enableCycleTimeLogging;
         init();
     }
 
@@ -40,6 +52,13 @@ public class ERCParameterLogger {
         _statusUpdate = _telemetry.addData(_statusCaption, "Parameters cleared");
         _paramMap.put(_statusCaption, _statusUpdate);
         _telemetry.update();
+
+        // Add all of the parameters you want to see on the driver hub display.
+        if (_enableCycleTime) {
+            addParameter(_paramCycleTimeMin);
+            addParameter(_paramCycleTimeMax);
+            addParameter(_paramCycleTimeAvg);
+        }
     }
 
     //*********************************************************************
@@ -90,5 +109,27 @@ public class ERCParameterLogger {
     {
         writeMsgToLogcat(msg.toString());
         writeMsgToDriverHub(msg);
+    }
+
+    public void resetCycleTimer(){
+        if (_enableCycleTime)
+            _cycleTime.reset();
+    }
+
+    public void updateCycleTimer(double loopCount) {
+        if (_enableCycleTime) {
+            _cycleTimePrevious = _cycleTimeCurrent;
+            _cycleTimeCurrent = _cycleTime.milliseconds();
+            _cycleTimeDelta = _cycleTimeCurrent - _cycleTimePrevious;
+
+            if (_cycleTimeDelta < _cycleTimeMin) _cycleTimeMin = _cycleTimeDelta;
+            if (_cycleTimeDelta > _cycleTimeMax) _cycleTimeMax = _cycleTimeDelta;
+            _cycleTimeAvg = _cycleTimeCurrent / loopCount;
+
+            updateParameter(_paramCycleTimeMin, _cycleTimeMin);
+            updateParameter(_paramCycleTimeMax, _cycleTimeMax);
+            updateParameter(_paramCycleTimeAvg, _cycleTimeAvg);
+            updateAll();
+        }
     }
 }

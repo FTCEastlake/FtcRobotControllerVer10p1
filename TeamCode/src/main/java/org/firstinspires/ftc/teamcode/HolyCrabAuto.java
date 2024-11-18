@@ -141,7 +141,7 @@ public class HolyCrabAuto extends LinearOpMode {
 //        _glbConfig.useNavxImu = false;
 //        _glbConfig.enableVisionColorSensor = true;
 
-        _logger = new ERCParameterLogger(this);
+        _logger = new ERCParameterLogger(this, false);
         _vision = new ERCVision(this, _logger);
         _mecanumDrive = new ERCMecanumDrive(this, _logger, _vision, true);
         _arm = new ERCArm(this, _logger);

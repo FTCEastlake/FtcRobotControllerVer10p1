@@ -43,7 +43,7 @@ public class Calibration extends LinearOpMode {
 
     private void initRobot() throws InterruptedException {
 
-        _logger = new ERCParameterLogger(this);
+        _logger = new ERCParameterLogger(this, false);
 
         _logger.addParameter(_paramGP1ID);
         _logger.addParameter(_paramGP2ID);
