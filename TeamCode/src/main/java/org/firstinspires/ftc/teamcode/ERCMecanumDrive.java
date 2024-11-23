@@ -79,7 +79,8 @@ public class ERCMecanumDrive {
     private void init(boolean shouldResetYaw) throws InterruptedException {
 
         // Select the IMU to use.
-        _imu  = _glbConfig.useNavxImu ? new ERCNavxIMU(_opMode, _logger) : new ERCRevIMU(_opMode, _logger);
+        //_imu  = _glbConfig.useNavxImu ? new ERCNavxIMU(_opMode, _logger) : new ERCRevIMU(_opMode, _logger);
+        _imu  = new ERCRevIMU(_opMode, _logger);
 
         // Make sure your ID's match your configuration
         _frontLeft = _hardwareMap.dcMotor.get("frontLeft");

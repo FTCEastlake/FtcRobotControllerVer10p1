@@ -23,22 +23,6 @@ android {
     }
 }
 
-repositories {
-    flatDir {
-        // Download and install navx-micro.zip at
-        // https://pdocs.kauailabs.com/navx-micro/software/
-
-        // Note: the navx-micro folder defaulted to C:\Users\UserName.
-        // You should copy the navx-micro folder to C:\Users\Public so
-        // that it's consist on all PCs.
-        dirs 'libs', 'C:\\Users\\Public\\navx-micro\\android\\libs'
-    }
-}
-
 dependencies {
     implementation project(':FtcRobotController')
-    // The compile method in Gradle has been deprecated
-    // and removed in newer versions (starting from Gradle 7.0).
-    // You should replace it with implementation.
-    implementation (name:'navx_ftc-release', ext:'aar')
 }
