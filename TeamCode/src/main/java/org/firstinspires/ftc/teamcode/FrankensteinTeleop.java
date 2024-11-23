@@ -37,6 +37,7 @@ public class FrankensteinTeleop extends LinearOpMode {
 
     ERCParameterLogger _logger;
     ERCDrivetrain _drive;
+    ERCGobilda4Bar _odometry;
     ERCVision _vision;
 //    ERCArm _arm;
 //    ERCLed _led;
@@ -109,6 +110,8 @@ public class FrankensteinTeleop extends LinearOpMode {
             else
                 _drive.move(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, drivePower);
 
+            _odometry.getPosition();
+
             loopCount++;
             _logger.updateCycleTimer(loopCount);
         }
@@ -124,6 +127,11 @@ public class FrankensteinTeleop extends LinearOpMode {
         _vision = null;
         //_drive = new ERCMecanumDrive(this, _logger, _vision, true);
         _drive = new ERCDrivetrain(this, _logger, _vision, true);
+
+        // For 4-bar, we are considering front center of robot frame to be our arbitrary reference point (in millimeters)
+        double xPodOffsetMM = -50.00625;    // negative is because the pod is to the right of center
+        double yPodOffsetMM = -23.81250;    // negative is because the pod is to the behind the front
+        _odometry = new ERCGobilda4Bar(this, _logger, true, true, true, xPodOffsetMM, yPodOffsetMM);
     }
 
 
