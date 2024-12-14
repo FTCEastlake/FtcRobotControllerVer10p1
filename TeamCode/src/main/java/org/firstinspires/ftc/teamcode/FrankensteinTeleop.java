@@ -67,6 +67,30 @@ public class FrankensteinTeleop extends LinearOpMode {
 
         initRobot();
 
+        while (!isStarted())
+        {
+            // The yaw is reset during the initialization of MecanumDrive class.
+            // Do we ever need to reset the yaw during TeleOp mode? Most likely not.
+            // Uncomment the code below if we ever need to reset yaw during TeleOp mode.
+            if (gamepad1.start)
+                _drive.resetYaw();
+
+            double autoDrivePower = 0.5;
+            if (gamepad1.x)
+                _drive.autoMove(0.0, -10.0, 0, autoDrivePower);
+            else if (gamepad1.b)
+                _drive.autoMove(0.0, 10.0, 0, autoDrivePower);
+            else if (gamepad1.y)
+                _drive.autoMove(10.0, 0.0, 0, autoDrivePower);
+            else if (gamepad1.a)
+                _drive.autoMove(-10.0, 0.0, 0, autoDrivePower);
+            else if (gamepad1.left_bumper)
+                _drive.autoMove(0.0, 0.0, -90, autoDrivePower);
+            else if (gamepad1.right_bumper)
+                _drive.autoMove(0.0, 0.0, 90, autoDrivePower);
+
+        }
+
         double drivePower, loopCount = 0.0;
 
         //******************************
@@ -110,7 +134,7 @@ public class FrankensteinTeleop extends LinearOpMode {
             else
                 _drive.move(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, drivePower);
 
-            _odometry.getPosition();
+            //_odometry.getPosition();
 
             loopCount++;
             _logger.updateCycleTimer(loopCount);
@@ -131,7 +155,7 @@ public class FrankensteinTeleop extends LinearOpMode {
         // For 4-bar, we are considering front center of robot frame to be our arbitrary reference point (in millimeters)
         double xPodOffsetMM = -50.00625;    // negative is because the pod is to the right of center
         double yPodOffsetMM = -23.81250;    // negative is because the pod is to the behind the front
-        _odometry = new ERCGobilda4Bar(this, _logger, true, true, true, xPodOffsetMM, yPodOffsetMM);
+        //_odometry = new ERCGobilda4Bar(this, _logger, true, true, true, xPodOffsetMM, yPodOffsetMM);
     }
 
 

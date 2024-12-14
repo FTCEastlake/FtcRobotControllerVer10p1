@@ -263,22 +263,20 @@ public class ERCDrivetrain {
             }
             leftPower -= currentPower;
         }
+
+
+        if (degrees != 0.0)
+        {
+            move(0,0, degrees, driveSpeed);
+            while ((_frontLeft.isBusy() && _frontRight.isBusy() &&
+                    _backLeft.isBusy() && _backRight.isBusy())) {
+                // Wait for completion
+            }
+        }
+
+        // Zero out all parameters so that the motors are shut down.
         move(0, 0, 0, driveSpeed);
 
-
-//        double forwardPower = forwardInches < 0 ? -1.0 : 1.0;
-////        double leftPower = 0.0;
-////        double turnCounterClkPowerPower = 0.0;
-//
-//        //forwardPower = forwardInches * COUNTS_PER_INCH / _inchesPerUnitPower;
-//
-//        move(forwardPower, 0, 0, driveSpeed);
-//
-//        while ((_frontLeft.isBusy() && _frontRight.isBusy() &&
-//                _backLeft.isBusy() && _backRight.isBusy())) {
-//            // Wait for completion
-//        }
-//        move(0, 0, 0, driveSpeed);
     }
 
 }
