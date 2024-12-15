@@ -264,14 +264,18 @@ public class ERCDrivetrain {
             leftPower -= currentPower;
         }
 
-
-        if (degrees != 0.0)
+        double degreesPerUnitPower = 120;
+        double degreesSign = degrees < 0.0 ? -1.0 : 1.0;
+        double degreesPower = abs(degrees) / degreesPerUnitPower ;
+        while (degreesPower != 0.0)
         {
-            move(0,0, degrees, driveSpeed);
+            double currentPower = degreesPower > 1.0 ? 1.0 : degreesPower;
+            move(0,0, degreesSign * currentPower, driveSpeed);
             while ((_frontLeft.isBusy() && _frontRight.isBusy() &&
                     _backLeft.isBusy() && _backRight.isBusy())) {
                 // Wait for completion
             }
+            degreesPower -= currentPower;
         }
 
         // Zero out all parameters so that the motors are shut down.
