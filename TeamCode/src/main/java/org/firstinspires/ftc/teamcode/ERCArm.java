@@ -156,6 +156,32 @@ public class ERCArm {
         logSliderEncoderValues();
     }
 
+    // encoderVal value should be in the range of _glbConfig.minSliderEncoderVal to _glbConfig.maxSliderEncoderVal
+    // power should just be from 0.0 to 1.0 because the run mode is RUN_TO_POSITION.
+    public void setSliderEncoderAuto(int encoderVal, double power) {
+        if (_runMode != DcMotor.RunMode.RUN_TO_POSITION)
+        {
+            _runMode = DcMotor.RunMode.RUN_TO_POSITION;
+            _slideLeft.setMode(_runMode);
+            _slideRight.setMode(_runMode);
+        }
+
+        _currentEncoderVal = encoderVal;
+        _slideLeft.setTargetPosition(_currentEncoderVal);
+        _slideRight.setTargetPosition(-_currentEncoderVal);
+
+        _slideLeft.setPower(power);
+        _slideRight.setPower(power);    // don't have to set negative as setTargetPosition() is already inverted
+
+        // Wait for slider to go to encoder value then shut off power to the motors so they won't overheat.
+        while (_slideLeft.isBusy() && _slideRight.isBusy()) {
+            // Wait for completion
+        }
+        _slideLeft.setPower(0.0);
+        _slideLeft.setPower(0.0);
+        logSliderEncoderValues();
+    }
+
     public void setSliderToZero() {
         if (_runMode != DcMotor.RunMode.RUN_TO_POSITION)
         {
