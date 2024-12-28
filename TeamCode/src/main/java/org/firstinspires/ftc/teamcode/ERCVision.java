@@ -97,7 +97,7 @@ public class ERCVision {
         builder.setCamera(_hardwareMap.get(WebcamName.class, "Webcam 1"));
         if (_glbConfig.useGoBuildaCamera)
             builder.setCameraResolution(new Size(640,480));
-        builder.addProcessor(_aprilTag);
+        //builder.addProcessor(_aprilTag);      // comment out april tags for this season simce not used.
         builder.addProcessor(_colorSensor);     // using this will slow down camera pipeline.
         _visionPortal = builder.build();
 
@@ -105,11 +105,11 @@ public class ERCVision {
 
 
         // Add all of the parameters you want to see on the driver hub display.
-        _logger.addParameter(_paramId);
-        _logger.addParameter(_paramRange);
-        _logger.addParameter(_paramBearing);
-        _logger.addParameter(_paramYaw);
-        _logger.addParameter(_paramDetections);
+//        _logger.addParameter(_paramId);
+//        _logger.addParameter(_paramRange);
+//        _logger.addParameter(_paramBearing);
+//        _logger.addParameter(_paramYaw);
+//        _logger.addParameter(_paramDetections);
         _logger.addParameter(_paramColor);
     }
 

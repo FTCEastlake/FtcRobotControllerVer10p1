@@ -44,9 +44,9 @@ public class Frankenstein3p0Teleop extends LinearOpMode {
     // This is where you can configure the specific of your individual robot.
     private void SetConfig() {
 
-        //****************************************************************************
-        // Note: this is where you change the default configurations for your robot.
-        //****************************************************************************
+        //***********************************************************************************
+        // Note: this is where you can OVERWRITE the default configurations for your robot.
+        //***********************************************************************************
         _glbConfig.robotType = ERCGlobalConfig.RobotType.Standard;
 
         // Drivetrain
@@ -54,6 +54,11 @@ public class Frankenstein3p0Teleop extends LinearOpMode {
         _glbConfig.drivePowerNormal = 0.50;
         _glbConfig.drivePowerSlow = 0.25;
 
+        // Vision parameters
+        _glbConfig.visionImageRegionLeft = -0.1;     // 0 = center, -1 = left
+        _glbConfig.visionImageRegionRight = 0.1;     // 0 = center, +1 = right
+        _glbConfig.visionImageRegionTop = 0.1;       // 0 = center, +1 = top
+        _glbConfig.visionImageRegionBottom = -0.1;   // 0 = center, -1 = bottom
     }
 
     @Override
@@ -144,6 +149,12 @@ public class Frankenstein3p0Teleop extends LinearOpMode {
 
             _odometry.getPosition();
 
+            _vision.DetectColor();
+            _logger.updateStatus("color detect: red = " + (_vision.isColorDetectedRed() ? "true" : "false") +
+                    ", blue = " + (_vision.isColorDetectedBlue() ? "true" : "false") +
+                    ", yellow = " + (_vision.isColorDetectedYellow() ? "true" : "false"));
+            _logger.updateAll();
+
             loopCount++;
             _logger.updateCycleTimer(loopCount);
         }
@@ -156,7 +167,7 @@ public class Frankenstein3p0Teleop extends LinearOpMode {
 
         SetConfig();
         _logger = new ERCParameterLogger(this, true);
-        _vision = null;
+        _vision = new ERCVision(this, _logger);
 
 
         //****************************************************************************************
@@ -165,7 +176,6 @@ public class Frankenstein3p0Teleop extends LinearOpMode {
         double xPodOffsetMM = -166.6875;    // X-pod offset (left/right) of arbitrary point, negative value for right of arbitrary point
         double yPodOffsetMM = -169.8625;    // Y-pod offset (front/behind) of arbitrary point, negative value for behind arbitrary point
         _odometry = new ERCGobilda4Bar(this, _logger, true, xPodOffsetMM, yPodOffsetMM);
-
 
         _drive = new ERCDrivetrain3p0(this, _logger, _odometry, _vision, true);
     }
