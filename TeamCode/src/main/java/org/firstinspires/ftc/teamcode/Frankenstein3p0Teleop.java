@@ -69,19 +69,33 @@ public class Frankenstein3p0Teleop extends LinearOpMode {
             if (gamepad1.start)
                 _drive.resetYaw();
 
-            double autoDrivePower = 0.1;
+            double autoDrivePower = 0.35;
+//            if (gamepad1.x)
+//                _drive.autoMove4Bar(0.0, -10.0, 0, autoDrivePower);
+//            else if (gamepad1.b)
+//                _drive.autoMove4Bar(0.0, 10.0, 0, autoDrivePower);
+//            else if (gamepad1.y)
+//                _drive.autoMove4Bar(10.0, 0.0, 0, autoDrivePower);
+//            else if (gamepad1.a)
+//                _drive.autoMove4Bar(-10.0, 0.0, 0, autoDrivePower);
+//            else if (gamepad1.left_bumper)
+//                _drive.autoMove4Bar(0.0, 0.0, -90, autoDrivePower);
+//            else if (gamepad1.right_bumper)
+//                _drive.autoMove4Bar(0.0, 0.0, 90, autoDrivePower);
+
+
             if (gamepad1.x)
-                _drive.autoMove4Bar(0.0, -10.0, 0, autoDrivePower);
+                _drive.autoMovePIDRight(-10.0, autoDrivePower);
             else if (gamepad1.b)
-                _drive.autoMove4Bar(0.0, 10.0, 0, autoDrivePower);
+                _drive.autoMovePIDRight(10.0, autoDrivePower);
             else if (gamepad1.y)
-                _drive.autoMove4Bar(10.0, 0.0, 0, autoDrivePower);
+                _drive.autoMovePIDForward(10.0, autoDrivePower);
             else if (gamepad1.a)
-                _drive.autoMove4Bar(-10.0, 0.0, 0, autoDrivePower);
+                _drive.autoMovePIDForward(-10.0, autoDrivePower);
             else if (gamepad1.left_bumper)
-                _drive.autoMove4Bar(0.0, 0.0, -90, autoDrivePower);
+                _drive.autoMovePIDTurn(-90, autoDrivePower);
             else if (gamepad1.right_bumper)
-                _drive.autoMove4Bar(0.0, 0.0, 90, autoDrivePower);
+                _drive.autoMovePIDTurn(90, autoDrivePower);
 
         }
 

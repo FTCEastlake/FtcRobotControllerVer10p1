@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import static androidx.core.math.MathUtils.clamp;
 import static java.lang.Math.abs;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -233,6 +234,12 @@ public class ERCDrivetrain3p0 {
         _backRight.setPower(power);
     }
 
+    public void stopMotors()
+    {
+        // Zero out all parameters so that the motors are shut down.
+        move(0, 0, 0, 0);
+    }
+
     public void autoMove(double forwardInches, double rightInches, double degrees, double driveSpeed) {
 
         double forwardSign = forwardInches < 0.0 ? -1.0 : 1.0;
@@ -275,20 +282,19 @@ public class ERCDrivetrain3p0 {
             degreesPower -= currentPower;
         }
 
-        // Zero out all parameters so that the motors are shut down.
-        move(0, 0, 0, driveSpeed);
+        stopMotors();
 
     }
 
-    double _autoAbsForwardInches;
-    double _autoAbsRightInches;
-    double _autoAbsDegrees;
-    public void autoSetAbsolutePosition(double forwardInches, double rightInches, double degrees)
-    {
-        _autoAbsForwardInches = forwardInches;
-        _autoAbsRightInches = rightInches;
-        _autoAbsDegrees = degrees;
-    }
+//    double _autoAbsForwardInches;
+//    double _autoAbsRightInches;
+//    double _autoAbsDegrees;
+//    public void autoSetAbsolutePosition(double forwardInches, double rightInches, double degrees)
+//    {
+//        _autoAbsForwardInches = forwardInches;
+//        _autoAbsRightInches = rightInches;
+//        _autoAbsDegrees = degrees;
+//    }
     public void autoMove4Bar(double absoluteForwardInches, double absoluteRightInches, double absoluteDegrees, double driveSpeed) {
 
         double[] refPositions ;
@@ -310,9 +316,117 @@ public class ERCDrivetrain3p0 {
 
         }
 
-        // Zero out all parameters so that the motors are shut down.
-        move(0, 0, 0, 0);
+        stopMotors();
 
+    }
+
+
+    // See reference: https://www.ctrlaltftc.com/the-pid-controller/tuning-methods-of-a-pid-controller
+    // Effects of increasing a parameter independently
+    // --------------------------------------------------------------------------------------------
+    // | Parameter | Rise time | Overshoot | Settling time | Steady-state error | Stability       |
+    // --------------------------------------------------------------------------------------------
+    // | Kp        | Decrease  | Increase  | Small change  | Decrease           | Degrade         |
+    // --------------------------------------------------------------------------------------------
+    // | Ki        | Decrease  | Increase  | Increase      | Eliminate          | Degrade         |
+    // --------------------------------------------------------------------------------------------
+    // | Kd        | Little    | Decrease  | Decrease      | Theoretically      | Improve if Kd   |
+    // |           | change    |           |               | no change          | is already low  |
+    // --------------------------------------------------------------------------------------------
+
+    // Tuning PID controller
+    // Start with Kp, Ki, and Kd at 0.
+    // Increase Kp until steady-state error is very low.
+    // Increase Ki until steady-state error is removed entirely.
+    // Increase Kd until oscillations are removed.
+    double _Kp = 0.2;
+    double _Ki = 0.0;
+    double _Kd = 0.0;
+
+    public void autoMovePIDForward(double relativeInches, double driveSpeed) {
+        autoMovePID(relativeInches, DriveDirection.forward, driveSpeed, _Kp, _Ki, _Kd);
+    }
+
+    public void autoMovePIDRight(double relativeInches, double driveSpeed) {
+        autoMovePID(relativeInches, DriveDirection.right, driveSpeed, _Kp, _Ki, _Kd);
+    }
+
+    public void autoMovePIDTurn(double relativeInches, double driveSpeed) {
+        autoMovePID(relativeInches, DriveDirection.turn, driveSpeed, _Kp, _Ki, _Kd);
+    }
+
+    // This is the order of _odometry.getPosition()
+    private enum DriveDirection {
+        forward,
+        right,
+        turn
+    }
+
+    public void autoMovePID(double targetPositionValue, DriveDirection direction, double driveSpeed, double Kp, double Ki, double Kd) {
+
+        int positionIndex = direction.ordinal();    // typecast enum to int with .ordinal()
+        boolean isTurnDirection = direction == DriveDirection.turn ? true: false;
+        double positionSign = isTurnDirection ? -1.0 : 1.0;
+        double finalPositionValue = targetPositionValue + _odometry.getPosition()[positionIndex] * positionSign;
+        if (isTurnDirection)
+            finalPositionValue = clamp(finalPositionValue, -175, 175);
+
+        //double[] odoPositions;
+        double currentOdometryValue;
+        double derivative = 0.0, integralSum = 0.0;
+        double error = 0.0, lastError = 0.0;
+        double power;
+        boolean setPointIsNotReached = true;
+        ElapsedTime timer = new ElapsedTime();
+
+        while (setPointIsNotReached) {
+
+            // obtain the 4bar odometry position
+            currentOdometryValue = _odometry.getPosition()[positionIndex] * positionSign;
+
+            // calculate the error
+            error = finalPositionValue - currentOdometryValue;
+
+            // rate of change of the error
+            derivative = (error - lastError) / timer.seconds();
+
+            // sum of all error over time
+            integralSum = integralSum + (error * timer.seconds());
+
+            power = (Kp * error) + (Ki * integralSum) + (Kd * derivative);
+
+            // Move() uses RUN_USING_ENCODER and low level function applies abs() to power value.
+            if (abs(power) > driveSpeed)
+                power = driveSpeed;
+
+            switch (direction) {
+                case turn:
+                    // Set power to minimum when we're within 5 degrees of target to reduce oscillation.
+                    if (abs(error) < 5) power = 0.05;
+                    move(0.0, 0.0, error, power); break;
+                case right:
+                    // Set power to minimum when we're within 2 inches of target to reduce oscillation.
+                    if (abs(error) < 2) power = 0.05;
+                    move(0.0, error, 0.0, power); break;
+                default:
+                    // Set power to minimum when we're within 2 inches of target to reduce oscillation.
+                    if (abs(error) < 2) power = 0.05;
+                    move(error, 0.0, 0.0, power); break;
+            }
+
+            lastError = error;
+            _logger.updateStatus("autoMove4BarForward: final, current, last error = " + finalPositionValue + ", " + currentOdometryValue + ", " + lastError);
+            _logger.updateAll();
+
+            // lastError can be negative but we want to compare absolute value.
+            if (abs(lastError) < 0.05)
+                setPointIsNotReached = false;
+
+            // reset the timer for next time
+            timer.reset();
+        }
+
+        stopMotors();
     }
 
 }
