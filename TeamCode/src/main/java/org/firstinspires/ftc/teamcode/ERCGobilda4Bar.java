@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -9,6 +11,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 public class ERCGobilda4Bar {
+
+    ERCGlobalConfig _glbConfig = ERCGlobalConfig.getInstance();
 
     private LinearOpMode _opMode;
     private HardwareMap _hardwareMap;
@@ -19,13 +23,13 @@ public class ERCGobilda4Bar {
     private double _yOffset;
 
 
-    private String _param4BarXPos = "4Bar X (inches)";
-    private String _param4BarYPos = "4Bar Y (inches)";
+    private String _param4BarXPos = "4Bar Forward (inches)";
+    private String _param4BarYPos = "4Bar Right (inches)";
     private String _param4BarRotation = "4Bar Rotation (degrees)";
 
 
     public ERCGobilda4Bar(LinearOpMode opMode, ERCParameterLogger logger, boolean resetIMU,
-                          boolean xPositiveForward, boolean yPositiveLeft, double xOffset, double yOffset) {
+                          double xOffset, double yOffset) {
 
         _opMode = opMode;
         _hardwareMap = opMode.hardwareMap;
@@ -33,10 +37,10 @@ public class ERCGobilda4Bar {
         _xOffset = xOffset;
         _yOffset = yOffset;
 
-        init(resetIMU, xPositiveForward, yPositiveLeft);
+        init(resetIMU);
     }
 
-    private void init(boolean resetIMU, boolean xPositiveForward, boolean yPositiveLeft) {
+    private void init(boolean resetIMU) {
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
@@ -65,13 +69,17 @@ public class ERCGobilda4Bar {
         /*
         Set the direction that each of the two odometry pods count. The X (forward) pod should
         increase when you move the robot forward. And the Y (strafe) pod should increase when
-        you move the robot to the left.
+        you move the robot to the right.
          */
-        GoBildaPinpointDriver.EncoderDirection xDirection = xPositiveForward ?
-                GoBildaPinpointDriver.EncoderDirection.FORWARD : GoBildaPinpointDriver.EncoderDirection.REVERSED;
-        GoBildaPinpointDriver.EncoderDirection yDirection = yPositiveLeft ?
-                GoBildaPinpointDriver.EncoderDirection.FORWARD : GoBildaPinpointDriver.EncoderDirection.REVERSED;
-        _odo.setEncoderDirections(xDirection, yDirection);
+        switch (_glbConfig.robotType) {
+            case HolyCrab:
+            case Frankenstein:
+                _odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+                break;
+            default:
+                _odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+                break;  // nothing to alter
+        }
 
 
         /*
